@@ -1,25 +1,67 @@
 import React from "react";
-import { Image, View, StyleSheet } from "react-native";
+import { Text, ImageBackground, View, StyleSheet } from "react-native";
+
 
 export default function ClothesCard() {
   return (
-    <View style={styles.frameStyles}>
-      <Image 
-      source={{uri:"../assets/clothesData/c1.jpeg"}} 
-      style={{width:250, height:250}}/>
-
-      
+    <View style={styles.card}>
+      <ImageBackground 
+      source={require("../assets/clothesData/c1.jpeg")} 
+      style={styles.image}>
+        <View style = {styles.cardInner}>
+        
+          <Text style={styles.name}>Sweater</Text>
+          <Text style={styles.desc}>"Lorem ipsum dolor sit amet"</Text>
+        
+        </View>
+      </ImageBackground>
     </View>
-  
   ); 
 
 };
 
 const styles = StyleSheet.create({
-  frameStyles: {
-    justifyContent:'center',
-    alignContent:'center',
-    flex:1,
+
+  card: {
+    width: '93%',
+    height: '70%',
+    
+    backgroundColor:'white',
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.30,
+    shadowRadius: 4.65,
+    elevation: 8,
+
+    borderRadius: 10,
   },
+
+  cardInner: {
+    padding:10,
+  },
+
+  name: {
+    fontSize:30,
+    color:'white',
+    fontWeight:'bold',
+
+  },
+
+  desc: {
+    fontSize:18,
+    color:'white',
+    lineHeight:25,
+  },
+
+  image: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    justifyContent: 'flex-end'
+  }
 
 });
