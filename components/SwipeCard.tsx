@@ -12,7 +12,13 @@ from "react-native-reanimated";
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler } from "react-native-gesture-handler";
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-export default function SwipeCard() {
+interface ClothesData {
+    name: string;
+    desc: string;
+    img: string;
+}
+
+export default function SwipeCard(props: {cardData:ClothesData}) {
     
     const {width: screenWidth} = useWindowDimensions();
 
@@ -54,7 +60,7 @@ export default function SwipeCard() {
         <GestureHandlerRootView>
             <GestureDetector gesture={swipe}>
                 <AnimatedView style={[containerStyle, styles.animatedCard]}>
-                    <ClothesCard/>
+                    <ClothesCard clothesData={props.cardData}/>
                 </AnimatedView>
             </GestureDetector>
         </GestureHandlerRootView>
@@ -68,10 +74,9 @@ export default function SwipeCard() {
 const styles = StyleSheet.create({
     
     animatedCard: {
-        flex: 1,
+        flex:1,
         alignItems: 'center',
         justifyContent: 'center',
-        
       },
 
 })

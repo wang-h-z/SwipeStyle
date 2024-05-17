@@ -1,0 +1,33 @@
+[
+    {
+        "data": {
+            "c1": {
+                "id" : "0",
+                "name": "Sweater",
+                "desc": "Lorem ipsum dolor sit amet",
+                "img": "https://i.pinimg.com/564x/11/f0/ff/11f0ff6689c2460c4ed819d74814f57a.jpg"
+            },
+
+            "c2": {
+                "id" : "1",
+                "name": "Random",
+                "desc": "Lorem ipsum dolor sit amet da2",
+                "img": "https://i.pinimg.com/736x/f1/ff/e4/f1ffe4bf1617a4a51a7f9af922dbbfd0.jpg"
+            },
+            
+            "c3": {
+                "id" : "2",
+                "name": "Random Guy",
+                "desc": "Lorem ipsum dolor sit amet ya3",
+                "img": "https://i.pinimg.com/736x/c9/bb/7f/c9bb7fba10f56f1f68027ab1fb8745e5.jpg"
+            },
+
+            "c4": {
+                "id" : "3",
+                "name": "Random Asian Guy",
+                "desc": "Lorem ipsum dolor sit amet ja4",
+                "img": "https://i.pinimg.com/736x/99/25/b5/9925b587a0d7b0d6497adaf3bbb92755.jpg"
+            }
+        }
+    }
+]

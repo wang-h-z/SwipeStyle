@@ -1,17 +1,25 @@
 import React from "react";
 import { Text, ImageBackground, View, StyleSheet } from "react-native";
 
+interface ClothesData {
+  name: string;
+  desc: string;
+  img: string;
+}
 
-export default function ClothesCard() {
+export default function ClothesCard(props:{clothesData: ClothesData}) {
+
+  const {name, desc, img} = props.clothesData;
+
   return (
     <View style={styles.card}>
       <ImageBackground 
-      source={require("../assets/clothesData/c1.jpeg")} 
+      source={{uri: img}} 
       style={styles.image}>
         <View style = {styles.cardInner}>
         
-          <Text style={styles.name}>Sweater</Text>
-          <Text style={styles.desc}>"Lorem ipsum dolor sit amet"</Text>
+          <Text style={styles.name}>{name}</Text> 
+          <Text style={styles.desc}>{desc}</Text>
         
         </View>
       </ImageBackground>
@@ -24,8 +32,7 @@ const styles = StyleSheet.create({
 
   card: {
     width: '93%',
-    height: '70%',
-    
+    height: '90%',
     backgroundColor:'white',
     shadowColor: "#000",
     shadowOffset: {
@@ -37,6 +44,7 @@ const styles = StyleSheet.create({
     elevation: 8,
 
     borderRadius: 10,
+    
   },
 
   cardInner: {

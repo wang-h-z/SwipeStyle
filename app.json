@@ -9,7 +9,8 @@
     "splash": {
       "image": "",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#ffffff",
+      "jsEngine": "hermes"
     },
     "ios": {
       "supportsTablet": true,
