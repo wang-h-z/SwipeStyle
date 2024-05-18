@@ -5,6 +5,7 @@ import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import clothesJson from "./assets/clothesData/clothes.json";
+import { Text } from 'react-native-reanimated/lib/typescript/Animated';
 
 const Tab = createBottomTabNavigator();
 

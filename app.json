@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "tabs/Login.tsx",
     "name": "Orbital_Blank",
     "slug": "Orbital_Blank",
     "version": "1.0.0",
