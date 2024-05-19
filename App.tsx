@@ -4,12 +4,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import clothesJson from "./assets/clothesData/clothes.json";
 
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const data = Object.values(clothesJson[0].data);
   return (
     <NavigationContainer>
       <Tab.Navigator
