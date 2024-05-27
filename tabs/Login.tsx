@@ -1,38 +1,47 @@
 import React, {useState} from 'react';
 import { Text, View, SafeAreaView, StyleSheet, Image, TextInput, Button, Touchable, TouchableOpacity, Alert } from 'react-native';
-import { registerRootComponent } from 'expo';
-import type { StatusBarStyle } from 'react-native';
+import { NavigationContainer, useNavigation, ParamListBase, NavigationProp } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import SignUp from './SignUp';
+import { auth } from '../config/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
-//TODO: Valid Email --> using Formik Library
-//TODO: Sign up Page --> use react-navigation
 //TODO: Firebase Auth to track accounts 
-// Dependencies: 
-// npm install @react-navigation/native
-// npm install react-native-screens react-native-safe-area-context
-// npm install @react-navigation/native-stack
-// npm install formik --save
-// npm install yup --save
 
+interface Form {
+    email: string;
+    password: string;
+  }
+
+  const LoginSchema = Yup.object().shape({
+    email: Yup.string().email('Invalid email'),
+  });
+  const navigation = useNavigation<NavigationProp<any>>();
+  
 export default function Login() {
-    const [email, setEmail] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const loginPress = () => console.log("youre gay");
-    const signUp = () => console.log("fuck you");
-    console.log(email);
-    console.log(password);
-
-    const LoginSchema = Yup.object().shape({
-        email: Yup.string().email('Invalid email').required(''),
-      });
-        
+    const firebaseSubmit = async (values: Form) => {
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+          console.log('User signedin with:', userCredential.user.email);
+          Alert.alert('Success', 'User signed in successfully');
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error('Error signing in:', error.message);
+            Alert.alert('Error', error.message);
+          } else {
+            console.error('Unexpected sign in error:', error);
+            Alert.alert('Error', 'An unexpected error occurred');
+          }
+        }
+      };
     return (
         <Formik 
-        initialValues={{email: '',}} 
-        onSubmit={value => Alert.alert('hello')}
+        initialValues={{email: '', password: ''}} 
+        onSubmit={firebaseSubmit}
         validationSchema={LoginSchema}> 
-        {({values, errors, handleChange, handleSubmit, setFieldTouched, touched}) => (
+        {({values, errors, handleChange, handleSubmit,}) => (
             <SafeAreaView style={styles.container}> 
             <Text style ={styles.title}>  Login</Text>
             <View style={styles.email}>
@@ -43,7 +52,7 @@ export default function Login() {
                 autoCapitalize='none'
                 onChangeText={handleChange('email')}
                 value={values.email}
-                onSubmitEditing={(value) => setEmail(value.nativeEvent.text)}/>
+                />
                 {errors.email && (
                     <Text style={styles.errorText}>{errors.email}</Text>
                 )}
@@ -53,20 +62,22 @@ export default function Login() {
                 placeholder={'Password'}
                 secureTextEntry={false} //set this to true or false to hide password
                 autoCapitalize='none'
-                onSubmitEditing={(value) => setPassword(value.nativeEvent.text)}/>
-            <TouchableOpacity style={styles.loginButton} onPress={()=>handleSubmit}>
-                <Text style={styles.loginText}>
-                Login</Text>
+                onChangeText={handleChange('password')}
+                value={values.password}
+                />
+            <TouchableOpacity style={styles.loginButton} onPress={handleSubmit as () => void}>
+                <Text style={styles.loginText}>Login</Text>
             </TouchableOpacity>       
             <View style={styles.signUp}>
                 <Text>Don't have an account? </Text>
-                    <TouchableOpacity onPress={() => handleSubmit}>
+                    <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
                         <Text style={styles.signUpButton}>Sign Up</Text>
                     </TouchableOpacity>
             </View>
             </SafeAreaView>
     )}
         </Formik>
+        
     )
 }
 const styles = StyleSheet.create({
@@ -119,4 +130,3 @@ const styles = StyleSheet.create({
     }
 });
 
-registerRootComponent(Login);
