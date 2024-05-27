@@ -40,9 +40,9 @@ const App: React.FC = () => {
             tabBarInactiveTintColor: 'gray',
           })}
         >
-          <Tab.Screen name="Account" component={Account} />
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Cart" component={CartScreen} />
+          <Tab.Screen name="Account" component={Account} />
           
         </Tab.Navigator>
       ) : (
