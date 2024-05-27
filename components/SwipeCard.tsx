@@ -27,7 +27,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
     const { width: screenWidth } = useWindowDimensions();
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    const currentCard = data[currentIndex];
+    const currentCard = data[(currentIndex) % data.length];
     const nextCard = data[(currentIndex + 1) % data.length];
 
     const translateX = useSharedValue(0);
@@ -88,8 +88,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
             }
         });
 
-
-
+    console.log(currentIndex)
     return (
         <View style={styles.pageContainer}>
             <View style={styles.nextCard}>

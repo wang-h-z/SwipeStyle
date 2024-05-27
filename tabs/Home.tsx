@@ -1,5 +1,5 @@
 import React, { useState,  useEffect, useRef } from 'react';
-import { AppState, AppStateEvent, AppStateStatus, View, Text } from 'react-native';
+import { AppState, AppStateStatus, View, Text } from 'react-native';
 import axios from 'axios';
 import SwipeCard from "../components/SwipeCard";
 
@@ -57,18 +57,6 @@ interface ClothesData {
     washingInformation: string,
 }
 
-interface Results {
-    aggregations: Object,
-    items: Array<ClothesData>,
-    pagination: Object,
-}
-
-interface UniqloData {
-    _id: string,
-    status: string,
-    result: Results
-}
-
 export default function Home() {
     const [clothes, setClothes] = useState<ClothesData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -88,8 +76,7 @@ export default function Home() {
 
         const listen = AppState.addEventListener('change', handleAppStateChange);
 
-        // Initial data fetch
-        
+        // Initial data fetch       
         fetchData();
 
         return () => {
@@ -103,14 +90,14 @@ export default function Home() {
         setError(null);
         try {
             console.log('Fetching data');
-            const response = await axios.get(`http://192.168.10.113:5051/getUniqlo`, {
+            const response = await axios.get(`http://192.168.0.63:5051/getUniqlo`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
                     'Expires': '0',
                 },
             });
-            if (response.data && response.data[0] && response.data[0].result && response.data[0].result.items) {
+            if (response.data) {
                 setClothes(response.data[0].result.items);
                 console.log('setClothes called');
             } else {
@@ -154,6 +141,8 @@ export default function Home() {
         img: images[index]
     }));
     /*
+    // Dummy data
+
     const data = [{
         name: 'inclusivity',
         price: '$4000',
