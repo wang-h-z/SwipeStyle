@@ -6,9 +6,10 @@ import CartScreen from './tabs/Cart';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import clothesJson from "./assets/clothesData/clothes.json";
 import useAuth from './hooks/useAuth';
-import Login from './tabs/Login';
-import SignUp from './tabs/SignUp';
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 import Account from './tabs/Account';
+import WelcomeScreen from './screens/WelcomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Tab = createBottomTabNavigator();
@@ -46,9 +47,10 @@ const App: React.FC = () => {
           
         </Tab.Navigator>
       ) : (
-        <Stack.Navigator>
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Navigator initialRouteName="Welcome" screenOptions={{headerShown:false}}>
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
         </Stack.Navigator>
       )}
     </NavigationContainer>
