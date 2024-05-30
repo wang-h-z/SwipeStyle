@@ -90,7 +90,7 @@ export default function Home() {
         setError(null);
         try {
             console.log('Fetching data');
-            const response = await axios.get(`http://192.168.0.63:5051/getUniqlo`, {
+            const response = await axios.get(`https://styleswipe.azurewebsites.net/getUniqlo`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
