@@ -3,6 +3,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navi
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
+import AccountScreen from './tabs/Account';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 
@@ -22,6 +23,8 @@ export default function App() {
                 iconName = focused ? 'home' : 'home-outline';
               } else if (route.name === 'Cart') {
                 iconName = focused ? 'cart' : 'cart-outline';
+              } else if (route.name === 'Account') {
+                iconName = focused ? 'person' : 'person-outline';
               }
 
               return <Ionicons name={iconName as any} size={size} color={color} />;
@@ -29,8 +32,9 @@ export default function App() {
             tabBarActiveTintColor: 'turquoise',
             tabBarInactiveTintColor: 'gray',
             headerShown:true,
-          })}
+          })} initialRouteName='Home'
         >
+          <Tab.Screen name="Account" component={AccountScreen} />
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Cart" component={CartScreen} />
         </Tab.Navigator>

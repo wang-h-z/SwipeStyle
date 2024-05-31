@@ -1,69 +1,117 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl: string;
+}
+
+const cartItems: CartItem[] = [
+  { id: '1', name: 'Product 1', price: 29.99, quantity: 2, imageUrl: 'https://via.placeholder.com/100' },
+  { id: '2', name: 'Product 2', price: 49.99, quantity: 1, imageUrl: 'https://via.placeholder.com/100' },
+];
 
 const CartScreen: React.FC = () => {
+  const calculateTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  };
+
+  const renderCartItem = ({ item }: { item: CartItem }) => (
+    <View style={styles.cartItem}>
+      <Image source={{ uri: item.imageUrl }} style={styles.cartItemImage} />
+      <View style={styles.cartItemDetails}>
+        <Text style={styles.cartItemName}>{item.name}</Text>
+        <Text style={styles.cartItemPrice}>${item.price.toFixed(2)}</Text>
+        <Text style={styles.cartItemQuantity}>Quantity: {item.quantity}</Text>
+      </View>
+    </View>
+  );
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.profileContainer}>
-        <Image source={{ uri: 'https://thumbs.dreamstime.com/b/profile-anonymous-face-icon-gray-silhouette-person-male-businessman-profile-default-avatar-photo-placeholder-isolated-white-107003824.jpg' }} style={styles.profileImage} />
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@example.com</Text>
-      </View>
-      <View style={styles.optionsContainer}>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Settings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Order History</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Logout</Text>
+    <View style={styles.container}>
+      <FlatList
+        data={cartItems}
+        renderItem={renderCartItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.cartList}
+      />
+      <View style={styles.totalContainer}>
+        <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
+        <TouchableOpacity style={styles.checkoutButton}>
+          <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 20,
+    flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  profileContainer: {
-    alignItems: 'center',
+  cartList: {
+    padding: 20,
+  },
+  cartItem: {
+    flexDirection: 'row',
     marginBottom: 20,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  email: {
-    fontSize: 16,
-    color: 'gray',
-  },
-  optionsContainer: {
-    marginTop: 20,
-  },
-  option: {
     backgroundColor: '#fff',
-    padding: 15,
     borderRadius: 10,
-    marginBottom: 10,
+    padding: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 1,
   },
-  optionText: {
+  cartItemImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+  },
+  cartItemDetails: {
+    marginLeft: 10,
+    flex: 1,
+    justifyContent: 'center',
+  },
+  cartItemName: {
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cartItemPrice: {
+    fontSize: 16,
+    color: 'gray',
+  },
+  cartItemQuantity: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  totalContainer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  checkoutButton: {
+    backgroundColor: 'turquoise',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  checkoutButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
