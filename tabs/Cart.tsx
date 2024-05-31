@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface CartItem {
   id: string;
@@ -19,14 +20,29 @@ const CartScreen: React.FC = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
   };
 
+  const checkoutFunction = () => {
+    console.log("Checkout!");
+  }
+  const deleteFunction = (no: string) => {
+    console.log(`Product ${no} deleted`);
+  }
+
   const renderCartItem = ({ item }: { item: CartItem }) => (
     <View style={styles.cartItem}>
       <Image source={{ uri: item.imageUrl }} style={styles.cartItemImage} />
+
       <View style={styles.cartItemDetails}>
         <Text style={styles.cartItemName}>{item.name}</Text>
         <Text style={styles.cartItemPrice}>${item.price.toFixed(2)}</Text>
         <Text style={styles.cartItemQuantity}>Quantity: {item.quantity}</Text>
+        
       </View>
+      <TouchableOpacity 
+        style={styles.deleteButton} 
+        hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} 
+        onPress={() => deleteFunction(item.id)}>
+          <Ionicons name='trash-outline' size={20} color='red'/>
+        </TouchableOpacity>
     </View>
   );
 
@@ -40,7 +56,7 @@ const CartScreen: React.FC = () => {
       />
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
-        <TouchableOpacity style={styles.checkoutButton}>
+        <TouchableOpacity style={styles.checkoutButton} onPress={checkoutFunction}>
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
       </View>
@@ -102,6 +118,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  
+  deleteButton: {
+    paddingRight:5,
+    paddingBottom:10,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  
   checkoutButton: {
     backgroundColor: 'turquoise',
     padding: 15,

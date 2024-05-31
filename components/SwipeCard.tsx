@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import ClothesCard from "../components/ClothesCard";
 import Animated, {
@@ -24,14 +24,17 @@ interface SwipeCardProps {
 }
 
 const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
-    const { width: screenWidth } = useWindowDimensions();
+    const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const currentCard = data[(currentIndex) % data.length];
     const nextCard = data[(currentIndex + 1) % data.length];
 
     const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
     const contextX = useSharedValue(0);
+    const contextY = useSharedValue(0);
+
     const rotation = useDerivedValue(() => interpolate(
         translateX.value,
         [0, screenWidth],
@@ -42,6 +45,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
         return {
             transform: [
                 { translateX: translateX.value },
+                { translateY: translateY.value },
                 { rotate: rotation.value },
             ],
         };
@@ -57,6 +61,13 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                         [1, 0.95, 1]
                     ),
                 },
+                {
+                    scale: interpolate(
+                        translateY.value,
+                        [-1.5 * screenHeight, 0, 1.5 * screenHeight],
+                        [1, 0.95, 1]
+                    ),
+                },
             ],
             opacity: interpolate(
                 translateX.value,
@@ -69,26 +80,43 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
     const swipe = Gesture.Pan()
         .onBegin(() => {
             contextX.value = translateX.value;
+            contextY.value = translateY.value;
         })
         .onChange((event) => {
             translateX.value = event.translationX + contextX.value;
+            translateY.value = Math.min(0, event.translationY + contextY.value); 
         })
         .onEnd((event) => {
-            if (Math.abs(event.velocityX) < 800 && Math.abs(event.translationX) < 150) {
+            if (Math.abs(event.velocityX) < 800 && Math.abs(event.translationX) < 150 && Math.abs(event.translationY) < 150) {
                 translateX.value = withSpring(0, { mass: 0.5 });
+                translateY.value = withSpring(0, { mass: 0.5 });
             } else {
-                translateX.value = withSpring(
-                    1.5 * screenWidth * Math.sign(event.translationX),
-                    { mass: 0.15 },
-                    () => {
+                const direction = Math.abs(event.translationX) > Math.abs(event.translationY) ? 'horizontal' : 'vertical';
+                const value = direction === 'horizontal' ? 1.5 * screenWidth * Math.sign(event.translationX) : 1.5 * screenHeight * Math.sign(event.translationY);
+
+                if (direction === 'horizontal') {
+                    if (event.translationX > 0) {
+                        console.log("User liked");
+                    } else {
+                        console.log("User dislike");
+                    }
+                    translateX.value = withSpring(value, { mass: 0.15 }, () => {
                         runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
                         translateX.value = 0;
-                    }
-                );
+                        translateY.value = 0;
+                    });
+                    
+                } else {
+                    console.log("added to cart");
+                    translateY.value = withSpring(value, { mass: 0.15 }, () => {
+                        runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
+                        translateX.value = 0;
+                        translateY.value = 0;
+                    });
+                }
             }
         });
 
-    console.log(currentIndex)
     return (
         <View style={styles.pageContainer}>
             <View style={styles.nextCard}>
@@ -125,3 +153,4 @@ const styles = StyleSheet.create({
 });
 
 export default SwipeCard;
+
