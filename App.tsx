@@ -4,7 +4,6 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import clothesJson from "./assets/clothesData/clothes.json";
 import useAuth from './hooks/useAuth';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
@@ -16,7 +15,6 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const App: React.FC = () => {
-  const data = Object.values(clothesJson[0].data);
   const { user } = useAuth();
 
   return (
@@ -56,3 +54,5 @@ const App: React.FC = () => {
     </NavigationContainer>
   );
 }
+
+export default App;
