@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Orbital_Blank",
-    "slug": "Orbital_Blank",
+    "slug": "swipestyle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "",
@@ -20,21 +20,23 @@
       "adaptiveIcon": {
         "foregroundImage": "",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.atonist.swipestyle"
     },
     "web": {
       "favicon": ""
     },
     "extra": {
       "eas": {
-        "projectId": "27b1dd59-4e16-4c33-8ace-bb0c1754fa52"
+        "projectId": "68d96b31-6317-4ea6-bf81-9acad46c2b8b"
       }
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/27b1dd59-4e16-4c33-8ace-bb0c1754fa52"
-    }
+      "url": "https://u.expo.dev/68d96b31-6317-4ea6-bf81-9acad46c2b8b"
+    },
+    "owner": "atonist"
   }
 }

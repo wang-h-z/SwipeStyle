@@ -23,6 +23,7 @@ const LoginSchema = Yup.object().shape({
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
+
   const firebaseSubmit = async (values: Form) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
@@ -37,7 +38,12 @@ const LoginScreen: React.FC = () => {
             Alert.alert('Error', 'An unexpected error occurred');
         }
     }
-};
+  };
+
+  const temp = () => {
+    Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
+  };
+
   return (
     <Formik
     initialValues={{ email: '', password: '' }}
@@ -82,17 +88,24 @@ const LoginScreen: React.FC = () => {
       </View>
       
       <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-google" size={30} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-facebook" size={30} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-apple" size={30} color="#000" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.register}>Don't have an account? Register</Text>
+      <Text style={styles.register}>Don't have an account? 
+      
+      <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate("Register")}>
+      <Text>Register</Text>
+      </TouchableOpacity>
+      
+      
+      </Text>
       <LoginButton title="Login" onPress={handleSubmit as () => void}></LoginButton>
       
     </View>
@@ -120,6 +133,7 @@ const styles = StyleSheet.create({
     fontSize: 35,
     fontWeight: 'bold',
     paddingLeft: '8%',
+    
 
   },
   text: {
@@ -198,6 +212,11 @@ const styles = StyleSheet.create({
     paddingTop:'3%',
     paddingBottom: '28%',
     alignSelf: 'center',
+  },
+
+  registerButton: {
+    paddingLeft: 5,
+    marginTop: -15,
   }
 });
 

@@ -40,6 +40,7 @@ interface FormValues {
 const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
   const firebaseSubmit = async (values: FormValues) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
@@ -56,6 +57,10 @@ const RegisterScreen: React.FC = () => {
     }
   };
 
+  const temp = () => {
+    Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
+  };
+  
   return (
     <Formik 
     initialValues={{
@@ -115,14 +120,14 @@ const RegisterScreen: React.FC = () => {
           style={styles.passwordInput}
           placeholder="Confirm Password"
           placeholderTextColor="#A9A9A9"
-          secureTextEntry={passwordVisible}
+          secureTextEntry={confirmPasswordVisible}
           value={values.confirmPassword}
           onChangeText={handleChange('confirmPassword')}
           autoCapitalize='none'
           onBlur={() => setFieldTouched('confirmPassword')}
         />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
-          <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
+        <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.toggleButton}>
+          <Icon name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
         </TouchableOpacity>
       </View>
       <View style={styles.dividerContainer}>
@@ -132,13 +137,13 @@ const RegisterScreen: React.FC = () => {
       </View>
       
       <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-google" size={30} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-facebook" size={30} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
+        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-apple" size={30} color="#000" />
         </TouchableOpacity>
       </View>
@@ -253,7 +258,9 @@ const styles = StyleSheet.create({
     alignSelf:'center',
   },
   loginButton: {
-    paddingLeft:10,
+    paddingLeft: 5,
+    marginTop: -3,
+
   }
  
 });
