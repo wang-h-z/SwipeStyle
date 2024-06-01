@@ -8,9 +8,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import useAuth from './hooks/useAuth';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import Account from './tabs/Account';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CartProvider } from './context/CartContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -21,6 +21,7 @@ const App: React.FC = () => {
   return (
     <NavigationContainer>
       {user ? (
+        <CartProvider>
         <Tab.Navigator
           initialRouteName='Home'
           screenOptions={({ route }) => ({
@@ -41,12 +42,13 @@ const App: React.FC = () => {
             tabBarInactiveTintColor: 'gray',
           })}
         >
-          <Tab.Screen name="Account" component={Account} />
+          <Tab.Screen name="Account" component={AccountScreen} />
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Cart" component={CartScreen} />
           
           
         </Tab.Navigator>
+        </CartProvider>
       ) : (
         <Stack.Navigator initialRouteName="Welcome" screenOptions={{headerShown:false}}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />

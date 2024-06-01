@@ -1,15 +1,10 @@
 import React from "react";
 import { Text, ImageBackground, View, StyleSheet } from "react-native";
-
-interface ClothesData {
-  name: string;
-  price: string;
-  img: string;
-}
+import { ClothesData } from "../types/ClothesData";
 
 export default function ClothesCard(props:{clothesData: ClothesData}) {
 
-  const {name, price, img} = props.clothesData;
+  const {name, price, img, currency} = props.clothesData;
   return (
     <View style={styles.card}>
       <ImageBackground 
@@ -18,7 +13,7 @@ export default function ClothesCard(props:{clothesData: ClothesData}) {
         <View style = {styles.cardInner}>
         
           <Text style={styles.name}>{name}</Text> 
-          <Text style={styles.desc}>{price}</Text>
+          <Text style={styles.desc}>{currency+price}</Text>
         
         </View>
       </ImageBackground>

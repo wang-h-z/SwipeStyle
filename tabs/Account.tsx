@@ -2,18 +2,23 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { auth } from '../config/firebase';
 import { signOut } from 'firebase/auth'
+import useAuth from '../hooks/useAuth';
 
 const AccountScreen: React.FC = () => {
   const handleLogout = async ()=> {
     await signOut(auth);
   }
-  
+  const user = useAuth().user;
+
+  //Add name field here
+  const email = user?.email;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
         <Image source={{ uri: 'https://thumbs.dreamstime.com/b/profile-anonymous-face-icon-gray-silhouette-person-male-businessman-profile-default-avatar-photo-placeholder-isolated-white-107003824.jpg' }} style={styles.profileImage} />
         <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@example.com</Text>
+        <Text style={styles.email}>{email}</Text>
       </View>
       
       <View style={styles.optionsContainer}>

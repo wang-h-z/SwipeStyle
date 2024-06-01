@@ -1,61 +1,74 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  imageUrl: string;
-}
-
-const cartItems: CartItem[] = [
-  { id: '1', name: 'Product 1', price: 29.99, quantity: 2, imageUrl: 'https://via.placeholder.com/100' },
-  { id: '2', name: 'Product 2', price: 49.99, quantity: 1, imageUrl: 'https://via.placeholder.com/100' },
-];
+import { useCart } from '../context/CartContext';
+import { CartData } from '../types/CartData';
 
 const CartScreen: React.FC = () => {
-  const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
-  };
-
+  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity } = useCart();
   const checkoutFunction = () => {
     console.log("Checkout!");
   }
-  const deleteFunction = (no: string) => {
-    console.log(`Product ${no} deleted`);
+  const deleteFunction = (name: string) => {
+    removeFromCart(name);
   }
 
-  const renderCartItem = ({ item }: { item: CartItem }) => (
+  const addFunction = (name: string) => {
+    addQuantity(name);
+    
+  }
+
+  const removeFunction = (name: string) => {
+    removeQuantity(name);
+  }
+
+  const renderCartItem = ({ item }: { item: CartData }) => (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.imageUrl }} style={styles.cartItemImage} />
+      <Image source={{ uri: item.img }} style={styles.cartItemImage} />
 
       <View style={styles.cartItemDetails}>
         <Text style={styles.cartItemName}>{item.name}</Text>
-        <Text style={styles.cartItemPrice}>${item.price.toFixed(2)}</Text>
-        <Text style={styles.cartItemQuantity}>Quantity: {item.quantity}</Text>
+        <Text style={styles.cartItemPrice}>{item.currency + item.price}</Text>
+        <Text style={styles.cartItemQuantity}>
+          Quantity: {item.quantity} 
+          
+        
+        </Text>
         
       </View>
+      <TouchableOpacity
+          style={styles.addButton}
+          hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+          onPress={() => addFunction(item.name)}>
+          <Ionicons name='add' size={20} color='green'/>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+          style={styles.minusButton}
+          hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+          onPress={() => removeFunction(item.name)}>
+          <Ionicons name='remove' size={20} color='red'/>
+      </TouchableOpacity>
+
       <TouchableOpacity 
         style={styles.deleteButton} 
-        hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} 
-        onPress={() => deleteFunction(item.id)}>
+        hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+        onPress={() => deleteFunction(item.name)}>
           <Ionicons name='trash-outline' size={20} color='red'/>
         </TouchableOpacity>
     </View>
   );
-
   return (
+    
     <View style={styles.container}>
       <FlatList
         data={cartItems}
         renderItem={renderCartItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.name}
         contentContainerStyle={styles.cartList}
       />
       <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Total: ${calculateTotalPrice()}</Text>
+        <Text style={styles.totalText}>Total: {totalPrice()}</Text>
         <TouchableOpacity style={styles.checkoutButton} onPress={checkoutFunction}>
           <Text style={styles.checkoutButtonText}>Checkout</Text>
         </TouchableOpacity>
@@ -97,6 +110,7 @@ const styles = StyleSheet.create({
   cartItemName: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginRight: 20,
   },
   cartItemPrice: {
     fontSize: 16,
@@ -120,10 +134,21 @@ const styles = StyleSheet.create({
   },
   
   deleteButton: {
-    paddingRight:5,
-    paddingBottom:10,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+    position: 'absolute',
+    top: 15,
+    right: 10,
+  },
+
+  addButton: {
+    position: 'absolute',
+    bottom: 15,
+    right: 10,
+  },
+
+  minusButton: {
+    position: 'absolute',
+    bottom: 15,
+    right: 45,
   },
   
   checkoutButton: {

@@ -10,14 +10,10 @@ import Animated, {
     runOnJS,
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import { useCart } from '../context/CartContext';
+import { ClothesData } from '../types/ClothesData';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
-
-interface ClothesData {
-    name: string;
-    price: string;
-    img: string;
-}
 
 interface SwipeCardProps {
     data: ClothesData[];
@@ -35,6 +31,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
     const contextX = useSharedValue(0);
     const contextY = useSharedValue(0);
 
+    const { addToCart } = useCart();
+    
     const rotation = useDerivedValue(() => interpolate(
         translateX.value,
         [0, screenWidth],
@@ -92,7 +90,9 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                 translateY.value = withSpring(0, { mass: 0.5 });
             } else {
                 const direction = Math.abs(event.translationX) > Math.abs(event.translationY) ? 'horizontal' : 'vertical';
-                const value = direction === 'horizontal' ? 1.5 * screenWidth * Math.sign(event.translationX) : 1.5 * screenHeight * Math.sign(event.translationY);
+                const value = direction === 'horizontal' 
+                                             ? 1.5 * screenWidth * Math.sign(event.translationX) 
+                                             : 1.0 * screenHeight * Math.sign(event.translationY);
 
                 if (direction === 'horizontal') {
                     if (event.translationX > 0) {
@@ -106,9 +106,11 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                         translateY.value = 0;
                     });
                     
-                } else {
-                    console.log("added to cart");
-                    translateY.value = withSpring(value, { mass: 0.15 }, () => {
+                } else {                    
+                    runOnJS(addToCart)(currentCard);
+                    
+                    translateX.value = withSpring(1.5 * screenWidth * Math.sign(event.translationX))
+                    translateY.value = withSpring(value, { mass: 0.25 }, () => {
                         runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
                         translateX.value = 0;
                         translateY.value = 0;

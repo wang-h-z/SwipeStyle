@@ -124,39 +124,23 @@ export default function Home() {
   
     const names = clothes.map(c => c.name);
     const prices = clothes.map(c => c.prices)
-        .map(p => {
-            const symbol = p.base?.currency.symbol || p.promo?.currency.symbol || '';
-            const value = parseFloat(p.base?.value || p.promo?.value || '0').toFixed(2);
-            return `${symbol}${value}`;
-        });
+        .map(p => parseFloat(p.base?.value || p.promo?.value || '0').toFixed(2));
 
     const images = clothes.map(c => {
         const num = Math.floor(Math.random() * c.images.main.length);
         return c.images.main[num].url;
     });
 
+    const currency = clothes[0].prices.base?.currency.symbol || clothes[0].prices.promo?.currency.symbol || '';
+
     const data = names.map((name, index) => ({
         name: name,
         price: prices[index],
-        img: images[index]
+        img: images[index],
+        currency: currency
     }));
-    /*
-    // Dummy data
-
-    const data = [{
-        name: 'inclusivity',
-        price: '$4000',
-        img: 'https://i.pinimg.com/originals/c2/dc/b0/c2dcb0dc37e31432c66bf33200e89496.jpg',
-    }, 
-    {
-        name: 'Fuck mongoDB',
-        price: 'idk',
-        img: 'https://i.pinimg.com/736x/92/62/71/926271a6a42c594812cb6f8956729e7e.jpg',
-    }, 
     
-    ]
-    */
-   
+    
     return (
         <SwipeCard data={data} />
     );

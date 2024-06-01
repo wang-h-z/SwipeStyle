@@ -1,5 +1,4 @@
-import { View, Text } from 'react-native'
-import React, { useEffect, useState} from 'react'
+import { useEffect, useState} from 'react'
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../config/firebase'
 
@@ -9,7 +8,7 @@ export default function useAuth() {
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (user) => {
             if(user) {
-                console.log('got user: ', user);
+                console.log('got user');
                 setUser(user)
             } else {
                 setUser(null)
