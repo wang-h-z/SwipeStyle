@@ -1,8 +1,9 @@
-import * as React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { createContext, useContext, useState, Dispatch, SetStateAction } from 'react';
+import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
+import AccountScreen from './tabs/Account';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import clothesJson from "./assets/clothesData/clothes.json";
 import useAuth from './hooks/useAuth';
