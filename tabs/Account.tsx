@@ -1,7 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { auth } from '../config/firebase';
+import { signOut } from 'firebase/auth'
 
 const AccountScreen: React.FC = () => {
+  const handleLogout = async ()=> {
+    await signOut(auth);
+  }
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
@@ -17,7 +23,7 @@ const AccountScreen: React.FC = () => {
         <TouchableOpacity style={styles.option}>
           <Text style={styles.optionText}>Order History</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
       </View>
