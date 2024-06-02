@@ -4,6 +4,7 @@ import axios from 'axios';
 import SwipeCard from "../components/SwipeCard";
 
 
+//ClothesData interface for data fetched from API
 interface ClothesData {
     careInstruction: string,
     colors: Array<Object>,

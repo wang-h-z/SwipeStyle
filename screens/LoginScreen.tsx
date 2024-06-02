@@ -16,7 +16,7 @@ interface Form {
 }
 
 const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Invalid email').required('Required'),
+    email: Yup.string().email('Invalid email'),
     password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
 });
 
@@ -60,17 +60,21 @@ const LoginScreen: React.FC = () => {
       <View style={styles.textContainer}>
       <TextInput
         style={styles.passwordInput}
-        placeholder="Enter Username or Email"
+        placeholder="Username or Email"
         placeholderTextColor="#A9A9A9"
         onChangeText={handleChange('email')}
         autoCapitalize='none'
         value={values.email}
+        
       />
+      {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+              )}
       </View>
       <View style={styles.textContainer}>
         <TextInput
           style={styles.passwordInput}
-          placeholder="Enter Password"
+          placeholder="Password"
           placeholderTextColor="#A9A9A9"
           secureTextEntry={passwordVisible}
           value={values.password}
@@ -153,6 +157,11 @@ const styles = StyleSheet.create({
     width: '85%',
     alignSelf: 'center',
     
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    paddingRight:10
   },
   passwordInput: {
     flex: 1,

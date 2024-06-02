@@ -12,22 +12,18 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
-    .min(6, 'Too Short!')
-    .max(50, 'Too Long!')
-    .required('Please enter your full name.'),
+    .min(2, 'Too Short!')
+    .max(50, 'Too Long!'),
   email: Yup.string()
-    .email('Invalid email')
-    .required('Please enter your email address.'),
+    .email('Invalid email'),
   password: Yup.string()
-    .min(8, 'Password must be 8 characters long')
-    .required('Please enter your password.')
-    .matches(/[0-9]/, 'Password requires a number')
-    .matches(/[a-z]/, 'Password requires a lowercase letter')
-    .matches(/[A-Z]/, 'Password requires an uppercase letter')
-    .matches(/[^\w]/, 'Password requires a symbol'),
+    .min(8, 'Min 8 characters')
+    .matches(/[0-9]/, 'Requires a number')
+    .matches(/[a-z]/, 'Requires a lowercase letter')
+    .matches(/[A-Z]/, 'Requires an uppercase letter')
+    .matches(/[^\w]/, 'Requires a symbol'),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password')], 'Your Passwords do not match.')
-      .required('Please confirm your password')
+      .oneOf([Yup.ref('password')], 'Passwords don\'t match.')
 });
 
 interface FormValues {
@@ -99,6 +95,9 @@ const RegisterScreen: React.FC = () => {
         autoCapitalize='none'
         onBlur={() => setFieldTouched('email')}
       />
+            {errors.email && (
+              <Text style={styles.errorText}>{errors.email}</Text>
+              )}
       </View>
       <View style={styles.textContainer}>
         <TextInput
@@ -110,7 +109,11 @@ const RegisterScreen: React.FC = () => {
           onChangeText={handleChange('password')}
           autoCapitalize='none'
           onBlur={() => setFieldTouched('password')}
+          
         />
+                   {errors.password && (
+              <Text style={styles.errorText}>{errors.password}</Text>
+              )}
         <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
           <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
         </TouchableOpacity>
@@ -126,6 +129,9 @@ const RegisterScreen: React.FC = () => {
           autoCapitalize='none'
           onBlur={() => setFieldTouched('confirmPassword')}
         />
+                   {errors.confirmPassword && (
+              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+              )}
         <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.toggleButton}>
           <Icon name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
         </TouchableOpacity>
@@ -199,6 +205,11 @@ const styles = StyleSheet.create({
     width: '85%',
     alignSelf: 'center',
     
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    paddingRight:10
   },
   passwordInput: {
     flex: 1,
