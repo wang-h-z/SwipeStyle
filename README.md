@@ -8,22 +8,21 @@
 ## Aim 
 SwipeStyle is an app that enables shoppaholics to make better purchasing decisions by offering personalized clothing recommendations through an intuitive and seamless user experience
 
-## Features
+## Current Features
 
-### Core
+   1. Authentication\
+   Users can register accounts and login with a valid email address
 
-#### 1. Data Scraping
-   + App retrieves data from popular fashion websites
-   + Information such as size, popularity and basic descriptors (style, color, etc) are stored 
+   2. Swiping UI
+   Ability to swipe on clothes in 3 directions:\
+      \- Up: Add to cart\
+      \- Right: Add to users liked list \
+      \- Left: Add to users disliked list\
+      
 
-#### 2. Swiping UI 
-   + Swipe clothes in 3 directions: 
-        * Right: Add to liked list
-        * Left: Add to disliked list
-        * Up: Add to cart 
-
-#### 3. Authentication
-   + Allow users to make accounts and checkout their desired items in one go 
+      (Like and dislike list to be added)
+   
+   3. Ability to select quantity of items in cart & delete items from cart
 
 ## Installation
 
@@ -32,6 +31,9 @@ SwipeStyle is an app that enables shoppaholics to make better purchasing decisio
    1. Download the Expo Go / Expo app on your mobile device through the [App Store](https://apps.apple.com/sg/app/expo-go/id982107779) / [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent&hl=en)
    
    2. Scan the QR code below with your device's camera. SwipeStyle should now open in the Expo Go app
+   <p align="center">
+    <img src= "https://qr.expo.dev/eas-update?slug=exp&projectId=68d96b31-6317-4ea6-bf81-9acad46c2b8b&groupId=4df2d3d2-b0a2-4941-a51b-1049ea32a012" width="250" >
+   </p>
 
 
 **Manual installation**\
@@ -51,9 +53,5 @@ Before you start, make sure you have [Node.js](https://nodejs.org/en) as well as
 
    5. A QR code should be generated in terminal. Scan the QR code with your device's camera. SwipeStyle should now open in the Expo Go app   
 
-   6. To stop the server, press Ctrl + c in the terminal instance that is running the server. This works on both MacOS and Windows
+   6. To stop the server, press `Ctrl + c` in the terminal instance that is running the server. This works on both MacOS and Windows
 
-
-## Usage example
-
-// Todo lmao
