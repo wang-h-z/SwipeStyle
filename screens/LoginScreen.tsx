@@ -111,7 +111,6 @@ const LoginScreen: React.FC = () => {
       
       </Text>
       <LoginButton title="Login" onPress={handleSubmit as () => void}></LoginButton>
-      
     </View>
     )}
     </Formik>
@@ -219,14 +218,16 @@ const styles = StyleSheet.create({
   },
   register: {
     paddingTop:'3%',
-    paddingBottom: '28%',
     alignSelf: 'center',
+    paddingBottom: '10%',
   },
 
   registerButton: {
     paddingLeft: 5,
     marginTop: -15,
-  }
+  },
+
+
 });
 
 export default LoginScreen;

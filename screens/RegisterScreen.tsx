@@ -142,17 +142,7 @@ const RegisterScreen: React.FC = () => {
         <View style={styles.dividerLine} />
       </View>
       
-      <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-google" size={30} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-facebook" size={30} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-apple" size={30} color="#000" />
-        </TouchableOpacity>
-      </View>
+
       <Text style={styles.login}>Already have an account? 
       <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
       <Text>Login</Text>
@@ -192,7 +182,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     paddingTop: 10,
     paddingLeft: '8%',
-    marginBottom: '20%',
+    marginBottom: '10%',
 
   },
   textContainer: {
