@@ -32,7 +32,7 @@ SwipeStyle is an app that enables shoppaholics to make better purchasing decisio
    
    2. Scan the QR code below with your device's camera. SwipeStyle should now open in the Expo Go app
    <p align="center">
-    <img src= "https://qr.expo.dev/eas-update?slug=exp&projectId=68d96b31-6317-4ea6-bf81-9acad46c2b8b&groupId=4df2d3d2-b0a2-4941-a51b-1049ea32a012" width="250" >
+    <img src= "https://qr.expo.dev/eas-update?slug=exp&projectId=68d96b31-6317-4ea6-bf81-9acad46c2b8b&groupId=b2ceec59-369b-4514-afb4-9593bc821d12" width="250" >
    </p>
 
 
