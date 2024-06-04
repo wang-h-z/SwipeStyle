@@ -7,8 +7,7 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { auth } from '../config/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import auth from "@react-native-firebase/auth";
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -39,7 +38,7 @@ const RegisterScreen: React.FC = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
   const firebaseSubmit = async (values: FormValues) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await auth().createUserWithEmailAndPassword(values.email, values.password);
       console.log('User registered with:', userCredential.user.email);
       Alert.alert('Success', 'User registered successfully');
     } catch (error) {

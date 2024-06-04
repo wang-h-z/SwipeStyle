@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "940099973156",
+    "project_id": "swipestyle-49ffc",
+    "storage_bucket": "swipestyle-49ffc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:940099973156:android:253c8cf5ef0974b8c0e8b1",
+        "android_client_info": {
+          "package_name": "com.orbitals.SwipeStyle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "940099973156-2hlvhb4mvje1i2nthu7rcunr94i3vjt1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoHKbNx_Kr0y3UZPv7c1JjAWdDXRo01Ws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "940099973156-2hlvhb4mvje1i2nthu7rcunr94i3vjt1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "940099973156-0dducr3d0drdrc40oa5hinvkj0q7s129.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.orbitals.SwipeStyle"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -7,8 +7,8 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { auth } from '../config/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import useAuth from '../hooks/useAuth';  // Importing the custom hook
+import auth from '@react-native-firebase/auth'; // Importing the auth module
 
 interface Form {
     email: string;
@@ -23,10 +23,11 @@ const LoginSchema = Yup.object().shape({
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
+  const { user } = useAuth();
 
   const firebaseSubmit = async (values: Form) => {
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const userCredential = await auth().signInWithEmailAndPassword(values.email, values.password);
         console.log('User signed in with:', userCredential.user.email);
         Alert.alert('Success', 'User signed in successfully');
     } catch (error) {

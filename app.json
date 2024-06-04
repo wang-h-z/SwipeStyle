@@ -14,14 +14,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ios"
+      "bundleIdentifier": "com.orbitals.SwipeStyle",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.atonist.swipestyle"
+      "package": "com.orbitals.SwipeStyle",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": ""
@@ -37,6 +39,18 @@
     "updates": {
       "url": "https://u.expo.dev/68d96b31-6317-4ea6-bf81-9acad46c2b8b"
     },
-    "owner": "atonist"
+    "owner": "atonist",
+     "plugins": [
+        "@react-native-firebase/app",
+        [
+          "expo-build-properties", 
+            {
+              "ios": {
+                "useFrameworks": "static"
+              }
+            }
+          
+        ]
+      ]
   }
 }

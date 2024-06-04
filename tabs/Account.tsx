@@ -1,12 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { auth } from '../config/firebase';
-import { signOut } from 'firebase/auth'
+import auth from '@react-native-firebase/auth';
 import useAuth from '../hooks/useAuth';
 
 const AccountScreen: React.FC = () => {
   const handleLogout = async ()=> {
-    await signOut(auth);
+    await auth().signOut().then(()=>console.log('User Signed Out'));
   }
   const user = useAuth().user;
 
