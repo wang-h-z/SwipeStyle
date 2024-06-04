@@ -2,64 +2,13 @@ import React, { useState,  useEffect, useRef } from 'react';
 import { AppState, AppStateStatus, View, Text } from 'react-native';
 import axios from 'axios';
 import SwipeCard from "../components/SwipeCard";
+import { UniqloData } from '../types/UniqloData';
 
 
 //ClothesData interface for data fetched from API
-interface ClothesData {
-    careInstruction: string,
-    colors: Array<Object>,
-    composition: string,
-    designDetail: string,
-    freeInformation: string,
-    genderName: string,
-    hideReview: Boolean,
-    images: {
-        main: Array<{
-            url: string,
-            colorCode: string
-        }>,
-        chip: Array<{
-            url: string,
-            colorCode: string
-        }>,
-        sub: Array<{
-            url: string,
-        }>
-    },
-    l1Id: string,
-    longDescription: string,
-    name: string,
-    prices: {
-        base?: {
-            currency: {
-                code: string,
-                symbol: string
-            },
-            value: string,
-        },
-        promo?: {
-            currency: {
-                code: string,
-                symbol: string
-            },
-            value: string,
-        },
-    },
-    productId: string,
-    plds: Array<Object>,
-    rating: Object,
-    representative: Object,
-    reviews: Object,
-    shortDescription: string,
-    sizeChartUrl: string,
-    sizeInformation: string,
-    sizes: Array<Object>,
-    unisexFlag: Number,
-    washingInformation: string,
-}
 
 export default function Home() {
-    const [clothes, setClothes] = useState<ClothesData[]>([]);
+    const [clothes, setClothes] = useState<UniqloData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
     const appState = useRef(AppState.currentState);
@@ -91,7 +40,7 @@ export default function Home() {
         setError(null);
         try {
             console.log('Fetching data');
-            const response = await axios.get(`https://styleswipe.azurewebsites.net/getUniqlo`, {
+            const response = await axios.get(`https://styleswipe.azurewebsites.net/getUniqloMenTops`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
@@ -99,7 +48,7 @@ export default function Home() {
                 },
             });
             if (response.data) {
-                setClothes(response.data[0].result.items);
+                setClothes(response.data[0].clothes_data);
                 console.log('setClothes called');
             } else {
                 console.error('Unexpected response structure:', response.data);
@@ -124,15 +73,13 @@ export default function Home() {
     }
   
     const names = clothes.map(c => c.name);
-    const prices = clothes.map(c => c.prices)
-        .map(p => parseFloat(p.base?.value || p.promo?.value || '0').toFixed(2));
-
+    const prices = clothes.map(c => parseFloat(c.price[1]).toFixed(2))
     const images = clothes.map(c => {
-        const num = Math.floor(Math.random() * c.images.main.length);
-        return c.images.main[num].url;
+        const num = Math.floor(Math.random() * c.image.length);
+        return c.image[num].url;
     });
 
-    const currency = clothes[0].prices.base?.currency.symbol || clothes[0].prices.promo?.currency.symbol || '';
+    const currency = clothes[0].price[0];
 
     const data = names.map((name, index) => ({
         name: name,

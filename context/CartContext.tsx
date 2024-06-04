@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ClothesData } from '../types/ClothesData';
+import { ClothesData } from '../types/UniqloData';
 import { CartData } from '../types/CartData';
 
 interface CartContextType {
