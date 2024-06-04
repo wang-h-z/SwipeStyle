@@ -9,6 +9,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { auth } from '../config/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 interface Form {
     email: string;
@@ -95,6 +96,7 @@ const LoginScreen: React.FC = () => {
         <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-google" size={30} color="#000" />
         </TouchableOpacity>
+        <GoogleSignInButton />
         <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
           <Icon name="logo-facebook" size={30} color="#000" />
         </TouchableOpacity>
