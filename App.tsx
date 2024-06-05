@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, Dispatch, SetStateAction } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import 'expo-dev-client';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
 import AccountScreen from './tabs/Account';

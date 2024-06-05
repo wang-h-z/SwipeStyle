@@ -41,6 +41,7 @@
     },
     "owner": "atonist",
      "plugins": [
+        "@react-native-google-signin/google-signin",
         "@react-native-firebase/app",
         [
           "expo-build-properties", 
