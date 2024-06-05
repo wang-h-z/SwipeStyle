@@ -1984,9 +1984,14 @@
   dependencies:
     plist "^3.1.0"
 
+"@react-native-firebase/firestore@^20.1.0":
+  version "20.1.0"
+  resolved "https://registry.yarnpkg.com/@react-native-firebase/firestore/-/firestore-20.1.0.tgz#8124aa286108a7e1c61c366d619bdfa4e4718947"
+  integrity sha512-g8na4jm7V+nBctzjeSyraK9hygOTPDv3nfkl4E+Nh7nB9DEgS74FrXXezRPVJKdkE0Nw9cWSJ1gU1tTA50ZEpg==
+
 "@react-native-google-signin/google-signin@^12.1.1":
   version "12.1.1"
-  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-12.1.1.tgz#2f71a6efa1490e297467625aaad531de393b0496"
+  resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-12.1.1.tgz"
   integrity sha512-jvH8AFFD4syq+HaqHy8LZZl60QwT7ILtKmNLhw96hJ6G6EqOgGr+W2gOKQMbFlgBbu2rsgMiXQcaNpFphUcToA==
 
 "@react-native/assets-registry@0.74.83", "@react-native/assets-registry@~0.74.83":
@@ -3740,7 +3745,7 @@ expo-constants@~16.0.0:
 
 expo-dev-client@~4.0.15:
   version "4.0.15"
-  resolved "https://registry.yarnpkg.com/expo-dev-client/-/expo-dev-client-4.0.15.tgz#abb8be48f750490caafa4c5c0d22605c630fedf2"
+  resolved "https://registry.npmjs.org/expo-dev-client/-/expo-dev-client-4.0.15.tgz"
   integrity sha512-Ffwz66DW3xdldlSUwPPXJCWoL4teA8uV374sEJpKwyBhJrFuL+KpMWMe4/Dz/F1oHzjflD8GHBu9xqoqNdiJzw==
   dependencies:
     expo-dev-launcher "4.0.16"
@@ -3751,7 +3756,7 @@ expo-dev-client@~4.0.15:
 
 expo-dev-launcher@4.0.16:
   version "4.0.16"
-  resolved "https://registry.yarnpkg.com/expo-dev-launcher/-/expo-dev-launcher-4.0.16.tgz#2220f59bf3bb3741636ac20a80ab8c754e2d29cb"
+  resolved "https://registry.npmjs.org/expo-dev-launcher/-/expo-dev-launcher-4.0.16.tgz"
   integrity sha512-mNt71awnJDL+GkvpBp9CzRR3q2Wm0GPo68noRvd389qDFBMA8QA8uyY8JVqekpr7RUwn1eg3cmfox5oSwL5rmA==
   dependencies:
     ajv "8.11.0"
@@ -3762,12 +3767,12 @@ expo-dev-launcher@4.0.16:
 
 expo-dev-menu-interface@1.8.3:
   version "1.8.3"
-  resolved "https://registry.yarnpkg.com/expo-dev-menu-interface/-/expo-dev-menu-interface-1.8.3.tgz#8c1262e29e0124fc5932a129c95b36de56656b20"
+  resolved "https://registry.npmjs.org/expo-dev-menu-interface/-/expo-dev-menu-interface-1.8.3.tgz"
   integrity sha512-QM0LRozeFT5Ek0N7XpV93M+HMdEKRLEOXn0aW5M3uoUlnqC1+PLtF3HMy3k3hMKTTE/kJ1y1Z7akH07T0lunCQ==
 
 expo-dev-menu@5.0.14:
   version "5.0.14"
-  resolved "https://registry.yarnpkg.com/expo-dev-menu/-/expo-dev-menu-5.0.14.tgz#7d54fc51b42217588cb9c5f2049bcf857d6e0b3d"
+  resolved "https://registry.npmjs.org/expo-dev-menu/-/expo-dev-menu-5.0.14.tgz"
   integrity sha512-zPXBMCyjptn4Aw7D2Z8FEqndED33g1ryChN0nyTA1zHzckDNwnGuLdTWTsNFrqmFqyqjRJgG5xFVJmnsDO8WyQ==
   dependencies:
     expo-dev-menu-interface "1.8.3"
