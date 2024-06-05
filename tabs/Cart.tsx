@@ -4,6 +4,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
 import { ClothesCardProps } from '../types/ClothesCardProps';
 
+interface CartProps extends ClothesCardProps {
+  imageNo: number;
+}
+
 const CartScreen: React.FC = () => {
   const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity } = useCart();
   const checkoutFunction = () => {
@@ -22,10 +26,10 @@ const CartScreen: React.FC = () => {
     removeQuantity(id);
   }
 
-  const renderCartItem = ({ item }: { item: ClothesCardProps }) => (
+  const renderCartItem = ({ item }: { item: CartProps }) => (
 
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.image[item.start].url }} style={styles.cartItemImage} />
+      <Image source={{ uri: item.image[item.imageNo].url }} style={styles.cartItemImage} />
 
       <View style={styles.cartItemDetails}>
         <Text style={styles.cartItemName}>{item.name}</Text>
@@ -34,7 +38,7 @@ const CartScreen: React.FC = () => {
           Quantity: {item.quantity} 
         </Text>
         <Text style={styles.cartItemQuantity}>
-          Color: {item.image[item.start].colorCode}
+          Color: {item.image[item.imageNo].colorCode}
         </Text>
       </View>
       <TouchableOpacity

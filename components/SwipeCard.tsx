@@ -33,6 +33,16 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
     const contextX = useSharedValue(0);
     const contextY = useSharedValue(0);
 
+    const [start, setStart] = useState(currentCard.start);
+
+    const leftTap = () => {
+      setStart((prevStart) => (prevStart - 1 + currentCard.image.length) % currentCard.image.length);
+    };
+  
+    const rightTap = () => {
+      setStart((prevStart) => (prevStart + 1) % currentCard.image.length);
+    };
+  
     const { addToCart } = useCart();
         
     const rotation = useDerivedValue(() => interpolate(
@@ -110,17 +120,19 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                         runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
                         translateX.value = 0;
                         translateY.value = 0;
+                        runOnJS(setStart)(nextCard.start);
                     });
                     
                 } else {                    
-                    runOnJS(addToCart)(currentCard);
-                    console.log("Cart: " + currentCard.start)
+                    console.log(start)
+                    runOnJS(addToCart)(currentCard, start);
                     console.log("Added to cart")
                     translateX.value = withSpring(1.5 * screenWidth * Math.sign(event.translationX))
                     translateY.value = withSpring(value, { mass: 0.25 }, () => {
                         runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
                         translateX.value = 0;
                         translateY.value = 0;
+                        runOnJS(setStart)(nextCard.start);
                     });
                 }
             }
@@ -130,14 +142,24 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
         <View style={styles.pageContainer}>
             <View style={styles.nextCard}>
                 <AnimatedView style={[nextCardStyle, styles.nextCard]}>
-                    <ClothesCard clothesData={nextCard} />
+                    <ClothesCard                         
+                        clothesData={nextCard} 
+                        start={nextCard.start} 
+                        setStart={setStart} 
+                        leftTap={leftTap} 
+                        rightTap={rightTap}/> 
                 </AnimatedView>
             </View>
 
             <GestureHandlerRootView>
                 <GestureDetector gesture={swipe}>
                     <AnimatedView style={[cardStyle, styles.animatedCard]}>
-                        <ClothesCard clothesData={currentCard} />
+                        <ClothesCard         
+                        clothesData={currentCard} 
+                        start={start} 
+                        setStart={setStart} 
+                        leftTap={leftTap} 
+                        rightTap={rightTap}  />
                     </AnimatedView>
                 </GestureDetector>
             </GestureHandlerRootView>

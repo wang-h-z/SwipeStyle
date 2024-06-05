@@ -1,31 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Text, ImageBackground, View, StyleSheet, TouchableOpacity } from "react-native";
 import { ClothesCardProps } from "../types/ClothesCardProps";
-import { Image } from "react-native";
 
-export default function ClothesCard(props: { clothesData: ClothesCardProps }) {
-  const { name, price, image, start: initialStart } = props.clothesData;
-  const [start, setStart] = useState(initialStart);
+export default function ClothesCard(props: { 
+  clothesData: ClothesCardProps,
+  start: number,
+  setStart: (start: number) => void,
+  leftTap: () => void,
+  rightTap: () => void
+}) {
+  const { name, price, image } = props.clothesData;
+  const { start, setStart, leftTap, rightTap } = props;
 
   const final_price = price[0] + parseFloat(price[1]).toFixed(2);
 
   useEffect(() => {
-    setStart(initialStart); 
-  }, [initialStart]);
-
-  const leftTap = () => {
-    setStart((prevStart) => (prevStart - 1 + image.length) % image.length);
-  };
-
-  const rightTap = () => {
-    setStart((prevStart) => (prevStart + 1) % image.length);
-  };
+    setStart(props.clothesData.start); 
+  }, [props.clothesData.start]);
 
   if (start < 0 || start >= image.length) {
     // Ensure start index is always within bounds
     setStart(0);
     return null;
   }
+
   return (
     <View style={styles.card}>
       <ImageBackground source={{ uri: image[start].url }} style={styles.image}>
