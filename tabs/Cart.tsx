@@ -2,58 +2,59 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
-import { CartData } from '../types/CartData';
+import { ClothesCardProps } from '../types/ClothesCardProps';
 
 const CartScreen: React.FC = () => {
   const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity } = useCart();
   const checkoutFunction = () => {
     console.log("Checkout!");
   }
-  const deleteFunction = (name: string) => {
-    removeFromCart(name);
+  const deleteFunction = (id: string) => {
+    removeFromCart(id);
   }
 
-  const addFunction = (name: string) => {
-    addQuantity(name);
+  const addFunction = (id: string) => {
+    addQuantity(id);
     
   }
 
-  const removeFunction = (name: string) => {
-    removeQuantity(name);
+  const removeFunction = (id: string) => {
+    removeQuantity(id);
   }
 
-  const renderCartItem = ({ item }: { item: CartData }) => (
+  const renderCartItem = ({ item }: { item: ClothesCardProps }) => (
+
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.img }} style={styles.cartItemImage} />
+      <Image source={{ uri: item.image[item.start].url }} style={styles.cartItemImage} />
 
       <View style={styles.cartItemDetails}>
         <Text style={styles.cartItemName}>{item.name}</Text>
-        <Text style={styles.cartItemPrice}>{item.currency + item.price}</Text>
+        <Text style={styles.cartItemPrice}>{item.price[0] + parseFloat(item.price[1]).toFixed(2)}</Text>
         <Text style={styles.cartItemQuantity}>
           Quantity: {item.quantity} 
-          
-        
         </Text>
-        
+        <Text style={styles.cartItemQuantity}>
+          Color: {item.image[item.start].colorCode}
+        </Text>
       </View>
       <TouchableOpacity
           style={styles.addButton}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-          onPress={() => addFunction(item.name)}>
+          onPress={() => addFunction(item.productID)}>
           <Ionicons name='add' size={20} color='green'/>
       </TouchableOpacity>
 
       <TouchableOpacity
           style={styles.minusButton}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-          onPress={() => removeFunction(item.name)}>
+          onPress={() => removeFunction(item.productID)}>
           <Ionicons name='remove' size={20} color='red'/>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.deleteButton} 
         hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-        onPress={() => deleteFunction(item.name)}>
+        onPress={() => deleteFunction(item.productID)}>
           <Ionicons name='trash-outline' size={20} color='red'/>
         </TouchableOpacity>
     </View>

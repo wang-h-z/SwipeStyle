@@ -1,29 +1,58 @@
-import React from "react";
-import { Text, ImageBackground, View, StyleSheet } from "react-native";
-import { ClothesData } from "../types/ClothesData";
+import React, { useState, useEffect } from "react";
+import { Text, ImageBackground, View, StyleSheet, TouchableOpacity } from "react-native";
+import { ClothesCardProps } from "../types/ClothesCardProps";
+import { Image } from "react-native";
 
-export default function ClothesCard(props:{clothesData: ClothesData}) {
+export default function ClothesCard(props: { clothesData: ClothesCardProps }) {
+  const { name, price, image, start: initialStart } = props.clothesData;
+  const [start, setStart] = useState(initialStart);
 
-  const {name, price, img, currency} = props.clothesData;
+  const final_price = price[0] + parseFloat(price[1]).toFixed(2);
+
+  useEffect(() => {
+    setStart(initialStart); 
+  }, [initialStart]);
+
+  const leftTap = () => {
+    setStart((prevStart) => (prevStart - 1 + image.length) % image.length);
+  };
+
+  const rightTap = () => {
+    setStart((prevStart) => (prevStart + 1) % image.length);
+  };
+
+  if (start < 0 || start >= image.length) {
+    // Ensure start index is always within bounds
+    setStart(0);
+    return null;
+  }
   return (
     <View style={styles.card}>
-      <ImageBackground 
-      source={{uri: img}} 
-      style={styles.image}>
-        <View style = {styles.cardInner}>
-        
-          <Text style={styles.name}>{name}</Text> 
-          <Text style={styles.desc}>{currency+price}</Text>
-        
+      <ImageBackground source={{ uri: image[start].url }} style={styles.image}>
+        <View style={styles.cardInner}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.desc}>{final_price}</Text>
+        </View>
+        <View style={styles.indicatorBar}>
+          {image.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.indicatorSegment,
+                index === start ? styles.activeSegment : styles.inactiveSegment
+              ]}
+            />
+          ))}
         </View>
       </ImageBackground>
+      <TouchableOpacity style={styles.leftTapArea} onPress={leftTap} />
+      <TouchableOpacity style={styles.rightTapArea} onPress={rightTap} />
     </View>
-  ); 
+  );
+}
 
-};
 
 const styles = StyleSheet.create({
-
   card: {
     width: '93%',
     height: '90%',
@@ -64,6 +93,41 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: 'hidden',
     justifyContent: 'flex-end'
-  }
+  },
+  leftTapArea: {
+    position: 'absolute',
+    left: 0,
+    width: '25%',
+    height: '100%',
+  },
+  rightTapArea: {
+    position: 'absolute',
+    right: 0,
+    width: '25%',
+    height: '100%',
+  },
+
+  indicatorBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    height: 5,
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
+  indicatorSegment: {
+    flex: 1,
+    height: "100%",
+    marginHorizontal: 2,
+  },
+  activeSegment: {
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+  },
+  inactiveSegment: {
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
 
 });

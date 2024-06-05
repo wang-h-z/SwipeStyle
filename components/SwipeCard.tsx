@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import ClothesCard from "../components/ClothesCard";
 import Animated, {
@@ -11,12 +11,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useCart } from '../context/CartContext';
-import { ClothesData } from '../types/ClothesData';
+import { ClothesCardProps } from '../types/ClothesCardProps';
+import { Image } from 'react-native';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
+  
 interface SwipeCardProps {
-    data: ClothesData[];
+    data: ClothesCardProps[];
 }
 
 const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
@@ -32,7 +34,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
     const contextY = useSharedValue(0);
 
     const { addToCart } = useCart();
-    
+        
     const rotation = useDerivedValue(() => interpolate(
         translateX.value,
         [0, screenWidth],
@@ -89,7 +91,11 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                 translateX.value = withSpring(0, { mass: 0.5 });
                 translateY.value = withSpring(0, { mass: 0.5 });
             } else {
-                const direction = Math.abs(event.translationX) > Math.abs(event.translationY) ? 'horizontal' : 'vertical';
+                var direction = 'horizontal';
+                if (Math.abs(event.translationX) < Math.abs(event.translationY) && event.translationY < 0) {
+                    direction = 'vertical';
+                }
+
                 const value = direction === 'horizontal' 
                                              ? 1.5 * screenWidth * Math.sign(event.translationX) 
                                              : 1.0 * screenHeight * Math.sign(event.translationY);
@@ -108,7 +114,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
                     
                 } else {                    
                     runOnJS(addToCart)(currentCard);
-                    
+                    console.log("Cart: " + currentCard.start)
+                    console.log("Added to cart")
                     translateX.value = withSpring(1.5 * screenWidth * Math.sign(event.translationX))
                     translateY.value = withSpring(value, { mass: 0.25 }, () => {
                         runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
