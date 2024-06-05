@@ -7,8 +7,9 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import useAuth from '../hooks/useAuth';  // Importing the custom hook
-import auth from '@react-native-firebase/auth'; // Importing the auth module
+import useAuth from '../hooks/useAuth';  
+import auth from '@react-native-firebase/auth'; 
+import { onGoogleButtonPress } from '../hooks/googleSignIn';
 
 interface Form {
     email: string;
@@ -93,7 +94,7 @@ const LoginScreen: React.FC = () => {
       </View>
       
       <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
+        <TouchableOpacity style={styles.socialButton} onPress={onGoogleButtonPress}>
           <Icon name="logo-google" size={30} color="#000" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
