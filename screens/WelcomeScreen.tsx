@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Alert } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import LoginButton from '../components/LoginButton'; // adjust the path as needed
+import LoginButton from '../components/buttons/LoginButton'; // adjust the path as needed
 
 
 

@@ -12,6 +12,7 @@ import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CartProvider } from './context/CartContext';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -43,6 +44,7 @@ const App: React.FC = () => {
             tabBarInactiveTintColor: 'gray',
           })}
         >
+          <Tab.Screen name="TestingOnboard" component={OnboardingScreen}/>
           <Tab.Screen name="Account" component={AccountScreen} />
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Cart" component={CartScreen} />

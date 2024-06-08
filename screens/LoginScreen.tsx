@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import LoginButton from '../components/LoginButton';
+import LoginButton from '../components/buttons/LoginButton';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
