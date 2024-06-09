@@ -98,6 +98,6 @@ export default function Home() {
     }));
         
     return (
-        <SwipeCard data={data} />
+        <SwipeCard dummy={data} />
     );
 }
