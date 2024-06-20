@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { Text, ImageBackground, View, StyleSheet, TouchableOpacity } from "react-native";
 import { ClothesCardProps } from "../types/ClothesCardProps";
+import Ionicons from 'react-native-vector-icons/Ionicons'; 
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+
 
 export default function ClothesCard(props: { 
   clothesData: ClothesCardProps,
@@ -19,9 +22,12 @@ export default function ClothesCard(props: {
   }, [props.clothesData.start]);
 
   if (start < 0 || start >= image.length) {
-    // Ensure start index is always within bounds
     setStart(0);
     return null;
+  }
+
+  const saveButton = () => {
+    console.log('Saved')
   }
 
   return (
@@ -45,6 +51,22 @@ export default function ClothesCard(props: {
       </ImageBackground>
       <TouchableOpacity style={styles.leftTapArea} onPress={leftTap} />
       <TouchableOpacity style={styles.rightTapArea} onPress={rightTap} />
+      <TouchableOpacity style={styles.saveButton} onPress={saveButton}>
+        <View style={styles.iconContainer}>
+          <Ionicons name="bookmark" size={30} color="white" style={styles.iconFill} />
+          <Ionicons name="bookmark-outline" size={30} color="black" style={styles.iconOutline} />
+        </View>
+      </TouchableOpacity>
+      
+      {/* Ratings icon 
+       <View style={styles.ratings}>
+      <View style={styles.iconContainer}>
+        <FontAwesome name="star" size={30} color="gold" style={styles.iconFill} />
+        <FontAwesome name="star-o" size={30} color="black" style={styles.iconOutline} />
+        </View>
+      </View>
+      */}
+      
     </View>
   );
 }
@@ -76,13 +98,18 @@ const styles = StyleSheet.create({
     fontSize:30,
     color:'white',
     fontWeight:'bold',
-
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: -1, height: 1},
+    textShadowRadius: 2,
   },
 
   desc: {
     fontSize:18,
     color:'white',
     lineHeight:25,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 2,
   },
 
   image: {
@@ -126,6 +153,33 @@ const styles = StyleSheet.create({
   },
   inactiveSegment: {
     backgroundColor: "rgba(255, 255, 255, 0.3)",
+  },
+  ratings: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  saveButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+
+    padding: 5,
+  },
+  iconContainer: {
+    position: 'relative',
+    width: 30,
+    height: 30,
+  },
+  iconFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  iconOutline: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
   },
 
 });

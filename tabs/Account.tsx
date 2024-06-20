@@ -31,7 +31,12 @@ const AccountScreen: React.FC = () => {
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
+
+     
       </View>
+
+
+
     </ScrollView>
   );
 };

@@ -1,16 +1,22 @@
 import React, { createContext, useContext, useState, Dispatch, SetStateAction } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from './tabs/Home';
-import CartScreen from './tabs/Cart';
-import AccountScreen from './tabs/Account';
+
+import HomeTab from './tabs/Home';
+import CartTab from './tabs/Cart';
+import AccountTab from './tabs/Account';
+import LikedTab from './tabs/Liked';
+
 import Ionicons from '@expo/vector-icons/Ionicons';
+
 import useAuth from './hooks/useAuth';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
+
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CartProvider } from './context/CartContext';
+import { LikedProvider } from './context/LikedContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -22,6 +28,8 @@ const App: React.FC = () => {
     <NavigationContainer>
       {user ? (
         <CartProvider>
+        <LikedProvider>
+        
         <Tab.Navigator
           initialRouteName='Home'
           screenOptions={({ route }) => ({
@@ -34,6 +42,8 @@ const App: React.FC = () => {
                 iconName = focused ? 'cart' : 'cart-outline';
               } else if (route.name === 'Account') {
                 iconName = focused ? 'person' : 'person-outline';
+              } else if (route.name === "Liked") {
+                iconName = focused ? 'heart' : 'heart-outline'
               }
 
               return <Ionicons name={iconName as any} size={size} color={color} />;
@@ -42,12 +52,14 @@ const App: React.FC = () => {
             tabBarInactiveTintColor: 'gray',
           })}
         >
-          <Tab.Screen name="Account" component={AccountScreen} />
-          <Tab.Screen name="Home" component={HomeScreen} />
-          <Tab.Screen name="Cart" component={CartScreen} />
-          
-          
+          <Tab.Screen name="Home" component={HomeTab} />
+          <Tab.Screen name="Liked" component={LikedTab} />
+          <Tab.Screen name="Cart" component={CartTab} />
+          <Tab.Screen name="Account" component={AccountTab} />
+
         </Tab.Navigator>
+        
+        </LikedProvider>
         </CartProvider>
       ) : (
         <Stack.Navigator initialRouteName="Welcome" screenOptions={{headerShown:false}}>

@@ -86,7 +86,7 @@ export default function Home() {
     });
     clothes.forEach(i => {
         i.image.forEach(j => {
-            j.colorCode = colorMapping[j.colorCode];
+            j.colorString = colorMapping[j.colorCode] || j.colorCode;
         })
     })
 
