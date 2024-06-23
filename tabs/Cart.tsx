@@ -19,7 +19,7 @@ const Cart: React.FC = () => {
 
   const navigation = useNavigation<NavigationProp<any>>();
   
-  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem } = useCart();
+  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem, clearCart } = useCart();
   
   const [selectedItem, setSelectedItem] = React.useState<CartProps | null>(null);
   const [color, setColor] = useState<string | null>(null);
@@ -131,6 +131,7 @@ const Cart: React.FC = () => {
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
       Alert.alert('Success', 'Your order is confirmed!');
+      clearCart();
     }
     setCheckOutLoading(false);
   };
