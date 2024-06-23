@@ -1,17 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Modal, Dimensions, Alert } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
 import { ClothesCardProps } from '../types/ClothesCardProps';
 import LoginButton from '../components/LoginButton';
 import DropdownComponent from '../components/DropDown';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+
+import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
+
 
 interface CartProps extends ClothesCardProps {
   imageNo: number;
   size: string;
 }
 
-const CartScreen: React.FC = () => {
+const Cart: React.FC = () => {
+
+  const navigation = useNavigation<NavigationProp<any>>();
+  
   const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem } = useCart();
   
   const [selectedItem, setSelectedItem] = React.useState<CartProps | null>(null);
@@ -63,11 +70,87 @@ const CartScreen: React.FC = () => {
   
   }, [color])
 
+  /**
+   * Stripe Functions
+   */
 
-  
+  const { initPaymentSheet, presentPaymentSheet} = usePaymentSheet();
+
+  const [checkOutLoading, setCheckOutLoading] = useState(false);
+
+  const fetchPaymentSheetParams = async () => {
+    console.log('Fetching payment sheet params')
+
+    const response = await fetch(`https://styleswipe.azurewebsites.net/payment-sheet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        totalPrice: totalPrice(),
+      }),
+    });
+
+    const { paymentIntent, ephemeralKey, customer } = await response.json();
+    //console.log(response.json())
+
+    return {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    };
+  };
+
+  const initializePaymentSheet = async () => {
+    const {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    } = await fetchPaymentSheetParams();
+
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "SwipeStyle",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      paymentIntentClientSecret: paymentIntent,
+      allowsDelayedPaymentMethods: true,
+      defaultBillingDetails: {
+        name: 'Jane Doe',
+      },
+      returnURL: 'payment-sheet://stripe-redirect',
+    });
+
+  };
+
+  const openPaymentSheet = async () => {
+    await initializePaymentSheet();
+
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      Alert.alert('Success', 'Your order is confirmed!');
+    }
+    setCheckOutLoading(false);
+  };
+
   const checkoutFunction = () => {
-    console.log("Checkout!");
+
+    if (cartItems.length === 0) {
+      Alert.alert('Cart is empty', 'Please add items to cart');
+
+      return;
+    }
+    setCheckOutLoading(true);
+    
+
+    openPaymentSheet();
+    
+    
   }
+
+
 
   const updateCart = (item: CartProps) => {
     if (color) {
@@ -83,13 +166,10 @@ const CartScreen: React.FC = () => {
 
   } 
 
-
-
-
-
   const renderCartItem = ({ item }: { item: CartProps }) => (
 
     <View style={styles.cartItem}>
+
       <TouchableOpacity onPress={() => {setSelectedItem(item)}}>
       <Image source={{ uri: item.image[item.imageNo].url }} style={styles.cartItemImage} />
       </TouchableOpacity>  
@@ -132,6 +212,10 @@ const CartScreen: React.FC = () => {
   return (
     
     <View style={styles.container}>
+      <StripeProvider
+        publishableKey="pk_test_51PTgfM08KORnB7Q3tyrLfySK0XmVikqmHpTQW4877qmM3g0Qfo3S5VvhhtX4voc9t3fPhS0qYKQ1eKjxCwWYAlFd00tUZ4fSF2"
+        merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
+      >
       <FlatList
         data={cartItems}
         renderItem={renderCartItem}
@@ -193,7 +277,6 @@ const CartScreen: React.FC = () => {
               <View style={{
                 flexDirection:'row', 
                 justifyContent: 'space-between', width: '100%',
-                
                 }}>
               <DropdownComponent 
                 data={selectedItem.image.map((i) => ({ label: i.colorString, value: i.colorString }))} 
@@ -209,9 +292,8 @@ const CartScreen: React.FC = () => {
               />
 
               </View>
+ 
               <LoginButton title='Update Cart' color='black' textColor='white' opStyles={{marginBottom: 120}} onPress={() => {updateCart(selectedItem)}}/>
-
-              
 
             </ScrollView>
           )}
@@ -219,10 +301,19 @@ const CartScreen: React.FC = () => {
       </Modal>
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>Total: {totalPrice()}</Text>
-        <TouchableOpacity style={styles.checkoutButton} onPress={checkoutFunction}>
+        <TouchableOpacity         
+          style={[
+          styles.checkoutButton,
+          { backgroundColor: checkOutLoading ? 'grey' : 'turquoise' }
+          ]} 
+          onPress={checkoutFunction} 
+          disabled={checkOutLoading}>
+          
           <Text style={styles.checkoutButtonText}>Checkout</Text>
+        
         </TouchableOpacity>
       </View>
+      </StripeProvider>
     </View>
   );
 };
@@ -302,7 +393,6 @@ const styles = StyleSheet.create({
   },
   
   checkoutButton: {
-    backgroundColor: 'turquoise',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -362,4 +452,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default CartScreen;
+export default Cart;

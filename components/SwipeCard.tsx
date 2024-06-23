@@ -19,16 +19,21 @@ export const SIZES = {
 };
 
 const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
-    const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const [data, setdata] = useState(dummy);
+
     const position = useRef(new Animated.ValueXY()).current;
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const currentCard = data[(currentIndex) % data.length];
     const nextCard = data[(currentIndex + 1) % data.length];
+
     const [start, setStart] = useState(currentCard.start);
+
     const [showLeftIcon, setShowLeftIcon] = useState(false);
     const [showRightIcon, setShowRightIcon] = useState(false);
     const [showUpIcon, setShowUpIcon] = useState(false);
+
+    const [saved, setSaved] = useState(false);
 
     const leftTap = () => {
         setStart((prevStart) => prevStart === 0 ? currentCard.image.length - 1 : (prevStart - 1) % currentCard.image.length);
@@ -39,6 +44,36 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
         setStart((prevStart) => (prevStart + 1) % currentCard.image.length);
         console.log('right tap');
     };
+
+    const triggerRightSwipe = () => {
+        console.log('save button');
+        setSaved(true);
+    }
+
+    useEffect(() => {
+        if (saved) {
+            Animated.spring(position, {
+                toValue: { x: SIZES.width + 100, y: 0 },
+                useNativeDriver: false,
+                mass: 0.5,
+            }).start(() => {
+                setStart(nextCard.start);
+    
+                if (data?.length / 2 < currentIndex) {
+                    setdata([...data, ...dummy]);
+                }
+    
+                setTimeout(() => {
+                    setCurrentIndex(currentIndex + 1);
+                    position.setValue({ x: 0, y: 0 });
+                    setShowLeftIcon(false);
+                    setShowRightIcon(false);
+                    setShowUpIcon(false);
+                    setSaved(false); // Reset the trigger
+                }, 200);
+            });
+        }
+    }, [saved]);
 
     const { addToCart } = useCart();
     const { addToLiked } = useLiked();
@@ -222,6 +257,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                                 setStart={setStart}
                                 leftTap={leftTap}
                                 rightTap={rightTap}
+                                triggerRightSwipe={triggerRightSwipe}
                             />
                         </Animated.View>
                     );
@@ -239,6 +275,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                                 setStart={setStart}
                                 leftTap={leftTap}
                                 rightTap={rightTap}
+                                triggerRightSwipe={triggerRightSwipe}
                             />
                         </Animated.View>
                     );

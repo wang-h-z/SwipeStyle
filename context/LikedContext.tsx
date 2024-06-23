@@ -22,7 +22,7 @@ export const LikedProvider: React.FC<LikedProviderProps> = ({ children }) => {
   const addToLiked = (item: ClothesCardProps, imgNo: number) => {
     const newItem = { ...item, imageNo: imgNo };
 
-    setLikedItems((prevItems) => [...prevItems, newItem]);
+    setLikedItems((prevItems) => [newItem, ...prevItems]); //Most recent liked item will be at the top
   };
 
   const removeFromLiked = (id: string) => {
