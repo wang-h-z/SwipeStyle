@@ -6,12 +6,21 @@ export interface UniqloData {
     image: Array<Image>,  
     gender: string
     sizes: Array<string>,
-    rating: Object,
-    brand: string
+    rating?: Rating,
+    brand: string,
+    longDescription: string,
+    composition: string,
     
+}
+
+interface Rating {
+    average: number,
+    count: number,
+    fit: number,
 }
 
 interface Image {
     url: string,
+    colorString: string,
     colorCode: string
 }

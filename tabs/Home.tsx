@@ -4,11 +4,18 @@ import axios from 'axios';
 import SwipeCard from "../components/SwipeCard";
 import { UniqloData } from '../types/UniqloData';
 
-
 //ClothesData interface for data fetched from API
+type ColorMapping = {
+    code: string;
+    displayCode: string;
+    name: string;
+  };
+
 
 export default function Home() {
     const [clothes, setClothes] = useState<UniqloData[]>([]);
+    const [colors, setColors] = useState<ColorMapping[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
     const appState = useRef(AppState.currentState);
@@ -49,6 +56,7 @@ export default function Home() {
             });
             if (response.data) {
                 setClothes(response.data[0].clothes_data);
+                setColors(response.data[0].colors);
                 console.log('setClothes called');
             } else {
                 console.error('Unexpected response structure:', response.data);
@@ -71,25 +79,25 @@ export default function Home() {
     if (error) {
         return <View><Text>Error fetching data: {error.message}</Text></View>;
     }
-  
-    const names = clothes.map(c => c.name);
-    const prices = clothes.map(c => parseFloat(c.price[1]).toFixed(2))
-    const images = clothes.map(c => {
-        const num = Math.floor(Math.random() * c.image.length);
-        return c.image[num].url;
+
+    const colorMapping: {[key: string]: string} = {};
+    colors.forEach(mapping => {
+        colorMapping[mapping.displayCode] = mapping.name;
     });
+    clothes.forEach(i => {
+        i.image.forEach(j => {
+            j.colorString = colorMapping[j.colorCode] || j.colorCode;
+        })
+    })
 
-    const currency = clothes[0].price[0];
-
-    const data = names.map((name, index) => ({
-        name: name,
-        price: prices[index],
-        img: images[index],
-        currency: currency
+    //Add a starting index for the image array
+    const data = clothes.map((item, index) => ({
+        ...item,
+        start: Math.floor(Math.random() * item.image.length),
+        quantity: 1,
     }));
-    
-    
+        
     return (
-        <SwipeCard data={data} />
+        <SwipeCard dummy={data} />
     );
 }

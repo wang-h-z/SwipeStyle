@@ -1,45 +1,50 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { ClothesData } from '../types/UniqloData';
-import { CartData } from '../types/CartData';
+import { ClothesCardProps } from '../types/ClothesCardProps';
 
 interface CartContextType {
-  cartItems: CartData[];
-  addToCart: (item: ClothesData) => void;
-  removeFromCart: (name: string) => void;
-  addQuantity: (name: string) => void;
-  removeQuantity: (name: string) => void;
+  cartItems: CartProps[];
+  addToCart: (item: ClothesCardProps, imgNo: number, size?:string) => void;
+
+  removeFromCart: (name: string, imageNo: number, size: string) => void;
+  addQuantity: (name: string, imageNo: number, size: string) => void;
+  removeQuantity: (name: string, imageNo: number, size: string) => void;
+  
   totalPrice: () => string;
+  updateCartItem: (item: CartProps) => void;
+
+  clearCart: () => void;
 }
 interface CartProviderProps {
     children: ReactNode;
   }
 
+interface CartProps extends ClothesCardProps {
+  imageNo: number;
+  size: string;
+}
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartData[]>([]);
+  const [cartItems, setCartItems] = useState<CartProps[]>([]);
 
-  const addToCart = (item: ClothesData) => {
-    const newItem = {
-      ...item,
-      quantity: 1,
-    };
-    
+  const addToCart = (item: ClothesCardProps, imgNo: number, size?:string) => {
+    const newItem = { ...item, imageNo: imgNo, size: size || 'L' };
 
     setCartItems((prevItems) => [...prevItems, newItem]);
   };
 
-  const removeFromCart = (name: string) => {
-    setCartItems((prevItems) => prevItems.filter(item => item.name !== name));
+  const removeFromCart = (id: string, imageNo: number, size: string) => {
+    setCartItems((prevItems) => prevItems.filter(item => item.productID !== id));
   };
 
-  const addQuantity = (name: string) => {
-    setCartItems((prevItems) => prevItems.map(item => item.name === name ? { ...item, quantity: item.quantity + 1 } : item));
+  const addQuantity = (id: string, imageNo: number, size: string) => {
+    setCartItems((prevItems) => prevItems.map(item => item.productID === id && item.size === size && item.imageNo === imageNo  ? { ...item, quantity: item.quantity + 1 } : item));
   }
 
-  const removeQuantity = (name: string) => {
-    const updatedCartItems = cartItems.reduce((acc: CartData[], item) => {
-      if (item.name === name) {
+  const removeQuantity = (id: string, imageNo: number, size: string) => {
+    const updatedCartItems = cartItems.reduce((acc: CartProps[], item) => {
+      if (item.productID === id && item.size === size && item.imageNo === imageNo) {
         if (item.quantity > 1) {
           acc.push({ ...item, quantity: item.quantity - 1 });
         }
@@ -51,16 +56,29 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   
     setCartItems(updatedCartItems);
   };
+
+  const updateCartItem = (item:CartProps) => {
+    const index = cartItems.findIndex((cartItem) => cartItem.productID === item.productID);
+    cartItems[index] = item;
+
+  }
   
 
   const totalPrice = () => {
-    const total = cartItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2);
+    const total = cartItems.reduce((total, item) => total + parseFloat(item.price[1]) * item.quantity, 0).toFixed(2);
     
-    return cartItems.length > 0 ? cartItems[0].currency + total : '$0.00';
+    return cartItems.length > 0 ? cartItems[0].price[0] + total : '$0.00';
+  }
+
+  const clearCart = () => {
+    setCartItems([]);
   }
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, totalPrice, addQuantity, removeQuantity }}>
+    <CartContext.Provider value={{ 
+      cartItems, addToCart, removeFromCart, totalPrice, 
+      addQuantity, removeQuantity, updateCartItem, clearCart 
+    }}>
       {children}
     </CartContext.Provider>
   );
