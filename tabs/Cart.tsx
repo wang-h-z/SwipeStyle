@@ -1,211 +1,59 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Modal, Dimensions, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
-import { ClothesCardProps } from '../types/ClothesCardProps';
-import LoginButton from '../components/LoginButton';
-import DropdownComponent from '../components/DropDown';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { CartData } from '../types/CartData';
 
-import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
-
-
-interface CartProps extends ClothesCardProps {
-  imageNo: number;
-  size: string;
-}
-
-const Cart: React.FC = () => {
-
-  const navigation = useNavigation<NavigationProp<any>>();
-  
-  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem, clearCart } = useCart();
-  
-  const [selectedItem, setSelectedItem] = React.useState<CartProps | null>(null);
-  const [color, setColor] = useState<string | null>(null);
-  const [size, setSize] = useState<string | null>(null);
-
-  const scrollViewRef = useRef<ScrollView>(null);
-  const screenWidth = Dimensions.get('window').width;
-  const screenHeight = Dimensions.get('window').height;
-
-  const modalOpenedRef = useRef(false);
-
-  const handleScroll = (event: any) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.floor(contentOffsetX / screenWidth);
-    setSelectedItem((prevItem) => prevItem ? { ...prevItem, imageNo: newIndex } : null);
-    if (contentOffsetX === screenWidth * newIndex && selectedItem) {
-      setColor(selectedItem.image[newIndex].colorString);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedItem && !modalOpenedRef.current) {
-
-      //console.log(selectedItem?.name)
-      const timeout = setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          x: screenWidth * (selectedItem.imageNo),
-          animated: false,
-        });
-        modalOpenedRef.current = true;
-        setSize(selectedItem.size);
-      }, 100); 
-      
-      return () => clearTimeout(timeout);
-      
-    }
-  }, [selectedItem]);
-
-  useEffect(() => {
-    
-    if (selectedItem && color) {
-      const index = selectedItem.image.findIndex((img) => img.colorString === color);
-      scrollViewRef.current?.scrollTo({
-        x: screenWidth * index,
-        animated: true,
-      }); 
-    }
-  
-  }, [color])
-
-  /**
-   * Stripe Functions
-   */
-
-  const { initPaymentSheet, presentPaymentSheet} = usePaymentSheet();
-
-  const [checkOutLoading, setCheckOutLoading] = useState(false);
-
-  const fetchPaymentSheetParams = async () => {
-    console.log('Fetching payment sheet params')
-
-    const response = await fetch(`https://styleswipe.azurewebsites.net/payment-sheet`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        totalPrice: totalPrice(),
-      }),
-    });
-
-    const { paymentIntent, ephemeralKey, customer } = await response.json();
-    //console.log(response.json())
-
-    return {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    };
-  };
-
-  const initializePaymentSheet = async () => {
-    const {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    } = await fetchPaymentSheetParams();
-
-    const { error } = await initPaymentSheet({
-      merchantDisplayName: "SwipeStyle",
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: paymentIntent,
-      allowsDelayedPaymentMethods: true,
-      defaultBillingDetails: {
-        name: 'Jane Doe',
-      },
-      returnURL: 'payment-sheet://stripe-redirect',
-    });
-
-  };
-
-  const openPaymentSheet = async () => {
-    await initializePaymentSheet();
-
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      Alert.alert('Success', 'Your order is confirmed!');
-      clearCart();
-    }
-    setCheckOutLoading(false);
-  };
-
+const CartScreen: React.FC = () => {
+  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity } = useCart();
   const checkoutFunction = () => {
+    console.log("Checkout!");
+  }
+  const deleteFunction = (name: string) => {
+    removeFromCart(name);
+  }
 
-    if (cartItems.length === 0) {
-      Alert.alert('Cart is empty', 'Please add items to cart');
-
-      return;
-    }
-    setCheckOutLoading(true);
-    
-
-    openPaymentSheet();
-    
+  const addFunction = (name: string) => {
+    addQuantity(name);
     
   }
 
+  const removeFunction = (name: string) => {
+    removeQuantity(name);
+  }
 
-
-  const updateCart = (item: CartProps) => {
-    if (color) {
-      item.imageNo = item.image.findIndex((img) => img.colorString === color);
-    }
-
-    if (size) {
-      item.size = size;
-    }
-
-    updateCartItem(item);
-    setSelectedItem(null);
-
-  } 
-
-  const renderCartItem = ({ item }: { item: CartProps }) => (
-
+  const renderCartItem = ({ item }: { item: CartData }) => (
     <View style={styles.cartItem}>
+      <Image source={{ uri: item.img }} style={styles.cartItemImage} />
 
-      <TouchableOpacity onPress={() => {setSelectedItem(item)}}>
-      <Image source={{ uri: item.image[item.imageNo].url }} style={styles.cartItemImage} />
-      </TouchableOpacity>  
-      
-      <Ionicons name='ellipse' size={20} color='white' style={{position:'absolute', top:88, left:86}}/>
-      <Text style={{position:'absolute', top:90, left:92.5, fontSize:13}}>{item.quantity}</Text>
-      
       <View style={styles.cartItemDetails}>
         <Text style={styles.cartItemName}>{item.name}</Text>
-        <Text style={styles.cartItemPrice}>{item.price[0] + parseFloat(item.price[1]).toFixed(2)}</Text>
+        <Text style={styles.cartItemPrice}>{item.currency + item.price}</Text>
         <Text style={styles.cartItemQuantity}>
-          Color: {item.image[item.imageNo].colorString}
+          Quantity: {item.quantity} 
+          
+        
         </Text>
-        <Text style={styles.cartItemQuantity}>
-          Size: {item.size}
-        </Text>
+        
       </View>
       <TouchableOpacity
           style={styles.addButton}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-          onPress={() => addQuantity(item.productID, item.imageNo, item.size)}>
+          onPress={() => addFunction(item.name)}>
           <Ionicons name='add' size={20} color='green'/>
       </TouchableOpacity>
 
       <TouchableOpacity
           style={styles.minusButton}
           hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-          onPress={() => removeQuantity(item.productID, item.imageNo, item.size)}>
+          onPress={() => removeFunction(item.name)}>
           <Ionicons name='remove' size={20} color='red'/>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.deleteButton} 
         hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
-        onPress={() => removeFromCart(item.productID, item.imageNo, item.size)}>
+        onPress={() => deleteFunction(item.name)}>
           <Ionicons name='trash-outline' size={20} color='red'/>
         </TouchableOpacity>
     </View>
@@ -213,108 +61,18 @@ const Cart: React.FC = () => {
   return (
     
     <View style={styles.container}>
-      <StripeProvider
-        publishableKey="pk_test_51PTgfM08KORnB7Q3tyrLfySK0XmVikqmHpTQW4877qmM3g0Qfo3S5VvhhtX4voc9t3fPhS0qYKQ1eKjxCwWYAlFd00tUZ4fSF2"
-        merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
-      >
       <FlatList
         data={cartItems}
         renderItem={renderCartItem}
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.cartList}
       />
-      <Modal
-        visible={!!selectedItem}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => {
-          setSelectedItem(null)
-          modalOpenedRef.current = false;
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.backButton} onPress={() => {
-            setSelectedItem(null)
-            modalOpenedRef.current = false;
-          }}>
-            <Ionicons name='arrow-back' size={30} color={'black'}/>
-          </TouchableOpacity>
-          {selectedItem && (
-            <ScrollView contentContainerStyle={{marginTop:50}}>
-              <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={true}
-                onScroll={handleScroll}
-                scrollEventThrottle={16}
-                contentContainerStyle={styles.scrollViewContent}
-                
-              >
-                {selectedItem.image.map((img, index) => (
-                  <View key={index} style={styles.imageContainer}>
-                    <Image
-                      source={{ uri: img.url }}
-                      style={[styles.fullScreenImage, { width: screenWidth, height: screenHeight * 0.5}]} 
-                    />
-                  </View>
-                ))}
-              </ScrollView>
-              
-              <View style={{
-                flexDirection:'row', 
-                justifyContent: 'space-between', width: '100%'
-                }}>
-
-              <Text style={styles.price}>{selectedItem.price[0] + parseFloat(selectedItem.price[1]).toFixed(2)}</Text>
-                          
-              {selectedItem.rating?.average && 
-                <Text style={styles.price}>{selectedItem.rating.average.toFixed(2)} ⭐ ({selectedItem.rating.count})</Text>
-              }
-              </View>
-              
-              <Text style={styles.info}>{selectedItem.name}</Text>  
-              
-              <View style={{
-                flexDirection:'row', 
-                justifyContent: 'space-between', width: '100%',
-                }}>
-              <DropdownComponent 
-                data={selectedItem.image.map((i) => ({ label: i.colorString, value: i.colorString }))} 
-                placeholder={selectedItem.image[selectedItem.imageNo]?.colorString || selectedItem.image[0].colorString}
-                onValueChange={(value) => setColor(value || null)}  
-                value={color}
-              />
-              <DropdownComponent 
-                data={selectedItem.sizes.map((i: string) => ({ label: i, value: i }))} 
-                placeholder="Select Size"
-                onValueChange={setSize}  
-                value={size}
-              />
-
-              </View>
- 
-              <LoginButton title='Update Cart' color='black' textColor='white' opStyles={{marginBottom: 120}} onPress={() => {updateCart(selectedItem)}}/>
-
-            </ScrollView>
-          )}
-        </View>
-      </Modal>
       <View style={styles.totalContainer}>
         <Text style={styles.totalText}>Total: {totalPrice()}</Text>
-        <TouchableOpacity         
-          style={[
-          styles.checkoutButton,
-          { backgroundColor: checkOutLoading ? 'grey' : 'turquoise' }
-          ]} 
-          onPress={checkoutFunction} 
-          disabled={checkOutLoading}>
-          
+        <TouchableOpacity style={styles.checkoutButton} onPress={checkoutFunction}>
           <Text style={styles.checkoutButtonText}>Checkout</Text>
-        
         </TouchableOpacity>
       </View>
-      </StripeProvider>
     </View>
   );
 };
@@ -352,7 +110,7 @@ const styles = StyleSheet.create({
   cartItemName: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 30,
+    marginRight: 20,
   },
   cartItemPrice: {
     fontSize: 16,
@@ -394,6 +152,7 @@ const styles = StyleSheet.create({
   },
   
   checkoutButton: {
+    backgroundColor: 'turquoise',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
@@ -403,54 +162,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  modalContent: {
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    backgroundColor: 'white',
-    marginTop: 90,
-  },
-  scrollViewContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fullScreenImage: {
-    resizeMode: 'cover',
-  },
-  backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 1,
-  },
-
-  info: {
-    fontSize: 15,
-    color: 'black',
-    alignSelf: 'flex-start',
-    marginLeft: 8,
-    marginBottom: 5,
-  },
-
-  price: {
-    fontSize: 18,
-    color: 'black',
-    fontWeight: 'bold',
-    marginTop: 10,
-    alignSelf: 'flex-start',
-    marginLeft: 8,  
-    marginRight: 8,
-    marginBottom: 15,
-  },
-
 });
 
-export default Cart;
+export default CartScreen;

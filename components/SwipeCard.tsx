@@ -1,312 +1,158 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, PanResponder as PanResponder_, StyleSheet, View, useWindowDimensions, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import ClothesCard from "../components/ClothesCard";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+    interpolate,
+    useDerivedValue,
+    runOnJS,
+} from "react-native-reanimated";
+import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import { useCart } from '../context/CartContext';
-import { useLiked } from '../context/LikedContext';
-import { ClothesCardProps } from '../types/ClothesCardProps';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { ClothesData } from '../types/ClothesData';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface SwipeCardProps {
-    dummy: ClothesCardProps[];
+    data: ClothesData[];
 }
-const { width, height } = Dimensions.get('screen');
 
-export const SIZES = {
-    width,
-    height,
-};
-
-const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
-    const [data, setdata] = useState(dummy);
-
-    const position = useRef(new Animated.ValueXY()).current;
-
+const SwipeCard: React.FC<SwipeCardProps> = ({ data }) => {
+    const { width: screenWidth, height: screenHeight } = useWindowDimensions();
     const [currentIndex, setCurrentIndex] = useState(0);
+
     const currentCard = data[(currentIndex) % data.length];
     const nextCard = data[(currentIndex + 1) % data.length];
 
-    const [start, setStart] = useState(currentCard.start);
-
-    const [showLeftIcon, setShowLeftIcon] = useState(false);
-    const [showRightIcon, setShowRightIcon] = useState(false);
-    const [showUpIcon, setShowUpIcon] = useState(false);
-
-    const [saved, setSaved] = useState(false);
-
-    const leftTap = () => {
-        setStart((prevStart) => prevStart === 0 ? currentCard.image.length - 1 : (prevStart - 1) % currentCard.image.length);
-        console.log('left tap');
-    };
-
-    const rightTap = () => {
-        setStart((prevStart) => (prevStart + 1) % currentCard.image.length);
-        console.log('right tap');
-    };
-
-    const triggerRightSwipe = () => {
-        console.log('save button');
-        setSaved(true);
-    }
-
-    useEffect(() => {
-        if (saved) {
-            Animated.spring(position, {
-                toValue: { x: SIZES.width + 100, y: 0 },
-                useNativeDriver: false,
-                mass: 0.5,
-            }).start(() => {
-                setStart(nextCard.start);
-    
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
-    
-                setTimeout(() => {
-                    setCurrentIndex(currentIndex + 1);
-                    position.setValue({ x: 0, y: 0 });
-                    setShowLeftIcon(false);
-                    setShowRightIcon(false);
-                    setShowUpIcon(false);
-                    setSaved(false); // Reset the trigger
-                }, 200);
-            });
-        }
-    }, [saved]);
+    const translateX = useSharedValue(0);
+    const translateY = useSharedValue(0);
+    const contextX = useSharedValue(0);
+    const contextY = useSharedValue(0);
 
     const { addToCart } = useCart();
-    const { addToLiked } = useLiked();
+    
+    const rotation = useDerivedValue(() => interpolate(
+        translateX.value,
+        [0, screenWidth],
+        [0, 20]
+    ) + 'deg');
 
-    const rotate = position.x.interpolate({
-        inputRange: [-SIZES.width, 0, SIZES.width],
-        outputRange: ['-20deg', '0deg', '20deg'],
-        extrapolate: 'clamp'
+    const cardStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateX: translateX.value },
+                { translateY: translateY.value },
+                { rotate: rotation.value },
+            ],
+        };
     });
 
-    const rotateAndTranslate = {
-        transform: [{
-            rotate: rotate
-        },
-        ...position.getTranslateTransform()
-        ]
-    };
-
-    const nextCardScale = position.x.interpolate({
-        inputRange: [-SIZES.width, 0, SIZES.width],
-        outputRange: [1, 0.90, 1],
-        extrapolate: 'clamp'
+    const nextCardStyle = useAnimatedStyle(() => {
+        return {
+            transform: [
+                {
+                    scale: interpolate(
+                        translateX.value,
+                        [-1.5 * screenWidth, 0, 1.5 * screenWidth],
+                        [1, 0.95, 1]
+                    ),
+                },
+                {
+                    scale: interpolate(
+                        translateY.value,
+                        [-1.5 * screenHeight, 0, 1.5 * screenHeight],
+                        [1, 0.95, 1]
+                    ),
+                },
+            ],
+            opacity: interpolate(
+                translateX.value,
+                [-screenWidth, 0, screenWidth],
+                [1, 0.8, 1]
+            )
+        };
     });
 
-    const PanResponder = PanResponder_.create({
-        onStartShouldSetPanResponder: (evt, gestureState) => false,
-        onMoveShouldSetPanResponder: (evt, gestureState) => {
-            const { dx, dy } = gestureState;
-            return Math.abs(dx) > 5 || Math.abs(dy) > 5;
-        },
-        onPanResponderMove: (evt, gestureState) => {
-            position.setValue({ x: gestureState.dx, y: Math.min(0, gestureState.dy) });
-
-            if (gestureState.dx > 15) {
-                setShowRightIcon(true);
-                setShowLeftIcon(false);
-                setShowUpIcon(false);
-
-            } else if (gestureState.dx < -15) {
-                setShowRightIcon(false);
-                setShowLeftIcon(true);
-                setShowUpIcon(false);
-            }
-
-            if (gestureState.dy < -15) {
-                setShowUpIcon(true);
-                setShowLeftIcon(false);
-                setShowRightIcon(false);
+    const swipe = Gesture.Pan()
+        .onBegin(() => {
+            contextX.value = translateX.value;
+            contextY.value = translateY.value;
+        })
+        .onChange((event) => {
+            translateX.value = event.translationX + contextX.value;
+            translateY.value = Math.min(0, event.translationY + contextY.value); 
+        })
+        .onEnd((event) => {
+            if (Math.abs(event.velocityX) < 800 && Math.abs(event.translationX) < 150 && Math.abs(event.translationY) < 150) {
+                translateX.value = withSpring(0, { mass: 0.5 });
+                translateY.value = withSpring(0, { mass: 0.5 });
             } else {
-                setShowUpIcon(false);
-            }
+                const direction = Math.abs(event.translationX) > Math.abs(event.translationY) ? 'horizontal' : 'vertical';
+                const value = direction === 'horizontal' 
+                                             ? 1.5 * screenWidth * Math.sign(event.translationX) 
+                                             : 1.0 * screenHeight * Math.sign(event.translationY);
 
-            if (data?.length / 2 < currentIndex) {
-                setdata([...data, ...dummy]);
-            }
-        },
-        onPanResponderRelease: (evt, gestureState) => {
-
-
-            if (Math.abs(gestureState.dy) > 200 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
-                console.log("Swipe up")
-                Animated.spring(position, {
-                    toValue: { x: Math.sign(gestureState.dx) * SIZES.width, y: -SIZES.height },
-                    useNativeDriver: false,
-                    friction: 4,
-                }).start(() => {
-                    addToCart(currentCard, start);
-                    setStart(nextCard.start);
-                });
-
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
+                if (direction === 'horizontal') {
+                    if (event.translationX > 0) {
+                        console.log("User liked");
+                    } else {
+                        console.log("User dislike");
+                    }
+                    translateX.value = withSpring(value, { mass: 0.15 }, () => {
+                        runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
+                        translateX.value = 0;
+                        translateY.value = 0;
+                    });
+                    
+                } else {                    
+                    runOnJS(addToCart)(currentCard);
+                    
+                    translateX.value = withSpring(1.5 * screenWidth * Math.sign(event.translationX))
+                    translateY.value = withSpring(value, { mass: 0.25 }, () => {
+                        runOnJS(setCurrentIndex)((currentIndex + 1) % data.length);
+                        translateX.value = 0;
+                        translateY.value = 0;
+                    });
                 }
-
-                setTimeout(() => {
-                    setCurrentIndex(currentIndex + 1);
-                    position.setValue({ x: 0, y: 0 });
-                    setShowLeftIcon(false);
-                    setShowRightIcon(false);
-                    setShowUpIcon(false);
-                }, 200);
-            } else if (gestureState.dx > 120) {
-                console.log("Swipe right");
-                Animated.spring(position, {
-                    toValue: { x: SIZES.width + 100, y: 0 },
-                    useNativeDriver: false,
-                    mass: 0.5,
-                }).start(() => {
-                    addToLiked(currentCard, start);
-                    setStart(nextCard.start);
-                });
-
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
-
-                setTimeout(() => {
-                    setCurrentIndex(currentIndex + 1);
-                    position.setValue({ x: 0, y: 0 });
-                    setShowLeftIcon(false);
-                    setShowRightIcon(false);
-                    setShowUpIcon(false);
-                }, 200);
-            } else if (gestureState.dx < -120) {
-                console.log("Swipe left");
-                Animated.spring(position, {
-                    toValue: { x: -SIZES.width - 100, y: 0 },
-                    useNativeDriver: false,
-                    mass: 0.5,
-                }).start(() => {
-                    setStart(nextCard.start);
-                });
-
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
-
-                setTimeout(() => {
-                    setCurrentIndex(currentIndex + 1);
-                    position.setValue({ x: 0, y: 0 });
-                    setShowLeftIcon(false);
-                    setShowRightIcon(false);
-                    setShowUpIcon(false);
-                }, 200);
-            } else {
-                setShowLeftIcon(false);
-                setShowRightIcon(false);
-                setShowUpIcon(false);
-                console.log("Reset");
-                Animated.spring(position, {
-                    toValue: { x: 0, y: 0 },
-                    friction: 4,
-                    useNativeDriver: false,
-                }).start();
             }
-        }
-    });
-
-    const iconOpacity = position.x.interpolate({
-        inputRange: [-SIZES.width, 0, SIZES.width],
-        outputRange: [1, 0, 1],
-        extrapolate: 'clamp'
-    });
-    const iconOpacityUp = position.y.interpolate({
-        inputRange: [-SIZES.height, 0, SIZES.height],
-        outputRange: [1, 0, 1],
-        extrapolate: 'clamp'
-    });
+        });
 
     return (
-        <View style={styles.container}>
-            {showLeftIcon && (
-                <Animated.View style={[styles.iconContainer, { opacity: iconOpacity }]}>
-                    <Ionicons name='close-circle' style={styles.icon} />
-                </Animated.View>
-            )}
-            {showRightIcon && (
-                <Animated.View style={[styles.iconContainer, { opacity: iconOpacity }]}>
-                    <Ionicons name='heart-circle' style={styles.icon} />
-                </Animated.View>
-            )}
-            {showUpIcon && (
-                <Animated.View style={[styles.iconContainer, { opacity: iconOpacityUp }]}>
-                    <Ionicons name='cart' style={styles.icon} />
-                </Animated.View>
-            )}
+        <View style={styles.pageContainer}>
+            <View style={styles.nextCard}>
+                <AnimatedView style={[nextCardStyle, styles.nextCard]}>
+                    <ClothesCard clothesData={nextCard} />
+                </AnimatedView>
+            </View>
 
-            {data?.map((item, i) => {
-                if (i < currentIndex) {
-                    return null;
-                } else if (i == currentIndex) {
-                    return (
-                        <Animated.View
-                            key={i}
-                            {...PanResponder.panHandlers}
-                            style={[rotateAndTranslate, styles.cardStyle]}
-                        >
-                            <ClothesCard
-                                clothesData={item}
-                                start={start}
-                                setStart={setStart}
-                                leftTap={leftTap}
-                                rightTap={rightTap}
-                                triggerRightSwipe={triggerRightSwipe}
-                            />
-                        </Animated.View>
-                    );
-                } else {
-                    return (
-                        <Animated.View
-                            key={i}
-                            style={[{
-                                transform: [{ scale: nextCardScale }],
-                            }, styles.cardStyle]}
-                        >
-                            <ClothesCard
-                                clothesData={item}
-                                start={item.start}
-                                setStart={setStart}
-                                leftTap={leftTap}
-                                rightTap={rightTap}
-                                triggerRightSwipe={triggerRightSwipe}
-                            />
-                        </Animated.View>
-                    );
-                }
-            }).reverse()}
+            <GestureHandlerRootView>
+                <GestureDetector gesture={swipe}>
+                    <AnimatedView style={[cardStyle, styles.animatedCard]}>
+                        <ClothesCard clothesData={currentCard} />
+                    </AnimatedView>
+                </GestureDetector>
+            </GestureHandlerRootView>
         </View>
     );
 };
 
-export default React.memo(SwipeCard);
-
 const styles = StyleSheet.create({
-    container: {
+    pageContainer: {
         flex: 1,
-        justifyContent: 'center',
+    },
+    nextCard: {
+        ...StyleSheet.absoluteFillObject,
         alignItems: 'center',
-    },
-    cardStyle: {
-        height: '100%',
-        width: SIZES.width,
-        position: "absolute",
         justifyContent: 'center',
-        alignItems: 'center'
     },
-    iconContainer: {
-        position: 'absolute',
-        justifyContent: 'center',
+    animatedCard: {
+        flex: 1,
         alignItems: 'center',
-        zIndex: 1,
+        justifyContent: 'center',
     },
-    icon: {
-        fontSize: 50,
-    }
 });
+
+export default SwipeCard;
+

@@ -1,24 +1,17 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { createContext, useContext, useState, Dispatch, SetStateAction } from 'react';
+import { NavigationContainer, DefaultTheme, DarkTheme, Theme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'expo-dev-client';
 import HomeScreen from './tabs/Home';
 import CartScreen from './tabs/Cart';
 import AccountScreen from './tabs/Account';
 import Ionicons from '@expo/vector-icons/Ionicons';
-
-import HomeTab from './tabs/Home';
-import CartTab from './tabs/Cart';
-import AccountTab from './tabs/Account';
-import LikedScreen from './tabs/Liked';
 import useAuth from './hooks/useAuth';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CartProvider } from './context/CartContext';
-import { LikedProvider } from './context/LikedContext';
-import { CollectionsProvider } from './context/CollectionsContext';
 import OnboardingScreen from './screens/OnboardingScreen';
 
 const Tab = createBottomTabNavigator();
@@ -31,37 +24,20 @@ const App: React.FC = () => {
     <NavigationContainer>
       {user ? (
         <CartProvider>
-          <LikedProvider>
-            <CollectionsProvider>
-              <Tab.Navigator
-                initialRouteName='Home'
-                screenOptions={({ route, navigation }) => ({
-                  tabBarIcon: ({ focused, color, size }) => {
-                    let iconName;
+        <Tab.Navigator
+          initialRouteName='Home'
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
 
-                    if (route.name === 'Home') {
-                      iconName = focused ? 'home' : 'home-outline';
-                    } else if (route.name === 'Cart') {
-                      iconName = focused ? 'cart' : 'cart-outline';
-                    } else if (route.name === 'Account') {
-                      iconName = focused ? 'person' : 'person-outline';
-                    } else if (route.name === "Liked") {
-                      iconName = focused ? 'heart' : 'heart-outline'
-                    }
+              if (route.name === 'Home') {
+                iconName = focused ? 'home' : 'home-outline';
+              } else if (route.name === 'Cart') {
+                iconName = focused ? 'cart' : 'cart-outline';
+              } else if (route.name === 'Account') {
+                iconName = focused ? 'person' : 'person-outline';
+              }
 
-                    return <Ionicons name={iconName as any} size={size} color={color} />;
-                  },
-                  tabBarActiveTintColor: 'turquoise',
-                  tabBarInactiveTintColor: 'gray',
-                })}
-              >
-                <Tab.Screen name="Home" component={HomeTab} />
-                <Tab.Screen name="Liked" component={LikedScreen} options={{headerShown:false}}/>
-                <Tab.Screen name="Cart" component={CartTab} />
-                <Tab.Screen name="Account" component={AccountTab} />
-              </Tab.Navigator>
-            </CollectionsProvider>
-          </LikedProvider>
               return <Ionicons name={iconName as any} size={size} color={color} />;
             },
             tabBarActiveTintColor: 'turquoise',
@@ -77,7 +53,7 @@ const App: React.FC = () => {
         </Tab.Navigator>
         </CartProvider>
       ) : (
-        <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
+        <Stack.Navigator initialRouteName="Welcome" screenOptions={{headerShown:false}}>
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
@@ -88,3 +64,4 @@ const App: React.FC = () => {
 }
 
 export default App;
+

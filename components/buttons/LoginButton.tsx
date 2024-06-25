@@ -4,19 +4,14 @@ import { Text, TouchableOpacity, StyleSheet, GestureResponderEvent } from 'react
 interface CustomButtonProps {
   title: string;
   color?: string;
-  textColor?: string;
-  opStyles?: object;
   onPress: (event: GestureResponderEvent) => void;
-  loading?: boolean;
 }
 
-const CustomButton: React.FC<CustomButtonProps> = ({ title, color, textColor, opStyles, onPress, loading }) => {
+const CustomButton: React.FC<CustomButtonProps> = ({ title, color, onPress }) => {
   const colour = color || '#000000'; //Default colour is black
-  const textColour = textColor || '#FFFFFF'; //Default text colour is white
-  
   return (
-    <TouchableOpacity style={[styles.button, {backgroundColor:colour}, opStyles]} onPress={onPress} disabled={loading}>
-      <Text style={[styles.buttonText, {color:textColour}]}>{title}</Text>
+    <TouchableOpacity style={[styles.button, {backgroundColor:colour}]} onPress={onPress}>
+      <Text style={styles.buttonText}>{title}</Text>
     </TouchableOpacity>
   );
 };
