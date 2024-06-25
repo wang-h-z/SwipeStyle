@@ -2,10 +2,139 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCart } from '../context/CartContext';
-import { CartData } from '../types/CartData';
+import { ClothesCardProps } from '../types/ClothesCardProps';
+import LoginButton from '../components/LoginButton';
+import DropdownComponent from '../components/DropDown';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
-const CartScreen: React.FC = () => {
-  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity } = useCart();
+import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
+
+
+interface CartProps extends ClothesCardProps {
+  imageNo: number;
+  size: string;
+}
+
+const Cart: React.FC = () => {
+
+  const navigation = useNavigation<NavigationProp<any>>();
+  
+  const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem } = useCart();
+  
+  const [selectedItem, setSelectedItem] = React.useState<CartProps | null>(null);
+  const [color, setColor] = useState<string | null>(null);
+  const [size, setSize] = useState<string | null>(null);
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
+
+  const modalOpenedRef = useRef(false);
+
+  const handleScroll = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.floor(contentOffsetX / screenWidth);
+    setSelectedItem((prevItem) => prevItem ? { ...prevItem, imageNo: newIndex } : null);
+    if (contentOffsetX === screenWidth * newIndex && selectedItem) {
+      setColor(selectedItem.image[newIndex].colorString);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedItem && !modalOpenedRef.current) {
+
+      //console.log(selectedItem?.name)
+      const timeout = setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          x: screenWidth * (selectedItem.imageNo),
+          animated: false,
+        });
+        modalOpenedRef.current = true;
+        setSize(selectedItem.size);
+      }, 100); 
+      
+      return () => clearTimeout(timeout);
+      
+    }
+  }, [selectedItem]);
+
+  useEffect(() => {
+    
+    if (selectedItem && color) {
+      const index = selectedItem.image.findIndex((img) => img.colorString === color);
+      scrollViewRef.current?.scrollTo({
+        x: screenWidth * index,
+        animated: true,
+      }); 
+    }
+  
+  }, [color])
+
+  /**
+   * Stripe Functions
+   */
+
+  const { initPaymentSheet, presentPaymentSheet} = usePaymentSheet();
+
+  const [checkOutLoading, setCheckOutLoading] = useState(false);
+
+  const fetchPaymentSheetParams = async () => {
+    console.log('Fetching payment sheet params')
+
+    const response = await fetch(`https://styleswipe.azurewebsites.net/payment-sheet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        totalPrice: totalPrice(),
+      }),
+    });
+
+    const { paymentIntent, ephemeralKey, customer } = await response.json();
+    //console.log(response.json())
+
+    return {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    };
+  };
+
+  const initializePaymentSheet = async () => {
+    const {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+    } = await fetchPaymentSheetParams();
+
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "SwipeStyle",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      paymentIntentClientSecret: paymentIntent,
+      allowsDelayedPaymentMethods: true,
+      defaultBillingDetails: {
+        name: 'Jane Doe',
+      },
+      returnURL: 'payment-sheet://stripe-redirect',
+    });
+
+  };
+
+  const openPaymentSheet = async () => {
+    await initializePaymentSheet();
+
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      Alert.alert('Success', 'Your order is confirmed!');
+    }
+    setCheckOutLoading(false);
+  };
+
   const checkoutFunction = () => {
     console.log("Checkout!");
   }
