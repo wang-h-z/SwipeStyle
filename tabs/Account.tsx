@@ -1,23 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { auth } from '../config/firebase';
-import { signOut } from 'firebase/auth'
+import { supabase } from '../lib/supabase';
 import useAuth from '../hooks/useAuth';
 
 const AccountScreen: React.FC = () => {
-  const handleLogout = async ()=> {
-    await signOut(auth);
-  }
-  const user = useAuth().user;
+  const { user } = useAuth();
 
-  //Add name field here
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error.message);
+    }
+  };
+
+  // Get user email and name
   const email = user?.email;
+  const name = user?.name || 'John Doe'; // Adjust according to your user metadata
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
-        <Image source={{ uri: 'https://thumbs.dreamstime.com/b/profile-anonymous-face-icon-gray-silhouette-person-male-businessman-profile-default-avatar-photo-placeholder-isolated-white-107003824.jpg' }} style={styles.profileImage} />
-        <Text style={styles.name}>John Doe</Text>
+        <Image 
+          source={{ uri: 'https://thumbs.dreamstime.com/b/profile-anonymous-face-icon-gray-silhouette-person-male-businessman-profile-default-avatar-photo-placeholder-isolated-white-107003824.jpg' }} 
+          style={styles.profileImage} 
+        />
+        <Text style={styles.name}>{name}</Text>
         <Text style={styles.email}>{email}</Text>
       </View>
       
@@ -31,12 +38,7 @@ const AccountScreen: React.FC = () => {
         <TouchableOpacity style={styles.option} onPress={handleLogout}>
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
-
-     
       </View>
-
-
-
     </ScrollView>
   );
 };

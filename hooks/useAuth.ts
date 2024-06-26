@@ -1,21 +1,65 @@
-import { useEffect, useState} from 'react'
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../config/firebase'
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase'; 
+import { User } from '@supabase/supabase-js'; // Import the necessary types
 
 export default function useAuth() {
-    const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User & { name?: string } | null>(null);
 
-    useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (user) => {
-            if(user) {
-                console.log('got user');
-                setUser(user)
+  useEffect(() => {
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error('Error getting session:', error.message);
+      } else {
+        const user = data?.session?.user ?? null;
+        if (user) {
+          // Fetch user profile data from 'users' table
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', user.id)
+            .single();
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError.message);
+            setUser(user); // Set user without name if there's an error
+          } else {
+            setUser({ ...user, ...profile }); // Merge user object with profile data
+          }
+        }
+      }
+    };
+
+    getSession();
+
+    // Listen for changes in authentication state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      if (user) {
+        // Fetch user profile data from 'users' table
+        supabase
+          .from('users')
+          .select('name')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: profile, error: profileError }) => {
+            if (profileError) {
+              console.error('Error fetching profile:', profileError.message);
+              setUser(user); // Set user without name if there's an error
             } else {
-                setUser(null)
+              setUser({ ...user, ...profile }); // Merge user object with profile data
             }
-        })
-        return unsub;
-    }, []);
+          });
+      } else {
+        setUser(null);
+      }
+    });
 
-    return { user };
+    // Cleanup the listener on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  return { user };
 }

@@ -7,8 +7,7 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { auth } from '../config/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { supabase } from '../lib/supabase';  // Import supabase client
 
 interface Form {
     email: string;
@@ -24,21 +23,31 @@ const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
 
-  const firebaseSubmit = async (values: Form) => {
+  const supabaseSubmit = async (values: Form) => {
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-        console.log('User signed in with:', userCredential.user.email);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+  
+      if (error) {
+        console.error('Error signing in:', error.message);
+        Alert.alert('Error', error.message);
+      } else if (data.user) {
+        console.log('User signed in with:', data.user.email);
         Alert.alert('Success', 'User signed in successfully');
+      }
     } catch (error) {
-        if (error instanceof Error) {
-            console.error('Error signing in:', error.message);
-            Alert.alert('Error', error.message);
-        } else {
-            console.error('Unexpected sign in error:', error);
-            Alert.alert('Error', 'An unexpected error occurred');
-        }
+      if (error instanceof Error) {
+        console.error('Error signing in:', error.message);
+        Alert.alert('Error', error.message);
+      } else {
+        console.error('Unexpected sign in error:', error);
+        Alert.alert('Error', 'An unexpected error occurred');
+      }
     }
   };
+  
 
   const temp = () => {
     Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
@@ -47,7 +56,7 @@ const LoginScreen: React.FC = () => {
   return (
     <Formik
     initialValues={{ email: '', password: '' }}
-    onSubmit={firebaseSubmit}
+    onSubmit={supabaseSubmit}
     validationSchema={LoginSchema}
     >
     {({ values, errors, handleChange, handleSubmit }) => (

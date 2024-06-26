@@ -2,13 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import LoginButton from '../components/LoginButton';
 import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { auth } from '../config/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { supabase } from '../lib/supabase';
+import LoginButton from '../components/LoginButton';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -22,8 +21,8 @@ const SignupSchema = Yup.object().shape({
     .matches(/[a-z]/, 'Requires a lowercase letter')
     .matches(/[A-Z]/, 'Requires an uppercase letter')
     .matches(/[^\w]/, 'Requires a symbol'),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password')], 'Passwords don\'t match.')
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords don\'t match.')
 });
 
 interface FormValues {
@@ -37,11 +36,35 @@ const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
-  const firebaseSubmit = async (values: FormValues) => {
+
+  const supabaseSubmit = async (values: FormValues) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-      console.log('User registered with:', userCredential.user.email);
-      Alert.alert('Success', 'User registered successfully');
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        console.error('Error registering user:', error.message);
+        Alert.alert('Error', error.message);
+      } else if (data.user) {
+        console.log('User registered with:', data.user.email);
+
+        // Insert the user's name into the users table
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({ id: data.user.id, name: values.name });
+
+          console.log(data.user.id)
+
+        if (insertError) {
+          console.error('Error inserting user profile:', insertError.message);
+          Alert.alert('Error', insertError.message);
+        } else {
+          Alert.alert('Success', 'User registered successfully');
+          navigation.navigate('Login'); // Navigate to the login screen or any other screen
+        }
+      }
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error registering user:', error.message);
@@ -53,107 +76,98 @@ const RegisterScreen: React.FC = () => {
     }
   };
 
-  const temp = () => {
-    Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
-  };
-  
   return (
     <Formik 
-    initialValues={{
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '' 
-    }} 
-    validationSchema={SignupSchema}
-    onSubmit={firebaseSubmit}>
+      initialValues={{
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '' 
+      }} 
+      validationSchema={SignupSchema}
+      onSubmit={supabaseSubmit}
+    >
       {({values, errors, touched, handleChange, setFieldTouched, isValid, handleSubmit}) => (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Welcome")}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Welcome!</Text>
-      <Text style={styles.text}>Let's bring you onboard</Text>
-      <View style={styles.textContainer}>
-      <TextInput
-        style={styles.passwordInput}
-        placeholder="Username"
-        placeholderTextColor="#A9A9A9"
-        value={values.name}
-        onChangeText={handleChange('name')}
-        autoCapitalize='none'
-        onBlur={() => setFieldTouched('name')}
-      />
-      </View>
-      <View style={styles.textContainer}>
-      <TextInput
-        style={styles.passwordInput}
-        placeholder="Email"
-        placeholderTextColor="#A9A9A9"
-        value={values.email}
-        onChangeText={handleChange('email')}
-        autoCapitalize='none'
-        onBlur={() => setFieldTouched('email')}
-      />
+        <View style={styles.container}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Welcome")}>
+            <Ionicons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Welcome!</Text>
+          <Text style={styles.text}>Let's bring you onboard</Text>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Username"
+              placeholderTextColor="#A9A9A9"
+              value={values.name}
+              onChangeText={handleChange('name')}
+              autoCapitalize='none'
+              onBlur={() => setFieldTouched('name')}
+            />
+          </View>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Email"
+              placeholderTextColor="#A9A9A9"
+              value={values.email}
+              onChangeText={handleChange('email')}
+              autoCapitalize='none'
+              onBlur={() => setFieldTouched('email')}
+            />
             {errors.email && (
               <Text style={styles.errorText}>{errors.email}</Text>
-              )}
-      </View>
-      <View style={styles.textContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry={passwordVisible}
-          value={values.password}
-          onChangeText={handleChange('password')}
-          autoCapitalize='none'
-          onBlur={() => setFieldTouched('password')}
-          
-        />
-                   {errors.password && (
+            )}
+          </View>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Password"
+              placeholderTextColor="#A9A9A9"
+              secureTextEntry={passwordVisible}
+              value={values.password}
+              onChangeText={handleChange('password')}
+              autoCapitalize='none'
+              onBlur={() => setFieldTouched('password')}
+            />
+            {errors.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
-              )}
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
-          <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.textContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Confirm Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry={confirmPasswordVisible}
-          value={values.confirmPassword}
-          onChangeText={handleChange('confirmPassword')}
-          autoCapitalize='none'
-          onBlur={() => setFieldTouched('confirmPassword')}
-        />
-                   {errors.confirmPassword && (
+            )}
+            <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
+              <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Confirm Password"
+              placeholderTextColor="#A9A9A9"
+              secureTextEntry={confirmPasswordVisible}
+              value={values.confirmPassword}
+              onChangeText={handleChange('confirmPassword')}
+              autoCapitalize='none'
+              onBlur={() => setFieldTouched('confirmPassword')}
+            />
+            {errors.confirmPassword && (
               <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-              )}
-        <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.toggleButton}>
-          <Icon name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.dividerContainer}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>or</Text>
-        <View style={styles.dividerLine} />
-      </View>
-      
-
-      <Text style={styles.login}>Already have an account? 
-      <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
-      <Text>Login</Text>
-      </TouchableOpacity>
-      
-      
-      </Text>
-      <LoginButton title="Register" onPress={handleSubmit as () => void}></LoginButton>
-      
-    </View>
-    )}
+            )}
+            <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.toggleButton}>
+              <Icon name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          <Text style={styles.login}>Already have an account? 
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
+              <Text>Login</Text>
+            </TouchableOpacity>
+          </Text>
+          <LoginButton title="Register" onPress={handleSubmit as () => void}></LoginButton>
+        </View>
+      )}
     </Formik>
   );
 }
