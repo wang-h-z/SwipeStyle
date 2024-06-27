@@ -64,8 +64,8 @@ export default function ColourPrefScreen() {
             key={item.id}
             colorCode={item.colorCode}
             colorText={item.colorText}
-            onPress={() => handleColorSelection(item.id)}
-            selected={selectedColors.includes(item.id)}
+            onPress={() => handleColorSelection(item.colorText)}
+            selected={selectedColors.includes(item.colorText)}
           />
         ))}
       </ScrollView>

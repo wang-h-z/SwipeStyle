@@ -61,10 +61,10 @@ const BrandScreen: React.FC = () => {
         {brandData.map((brand) => (
           <BrandButton
             key={brand.id}
-            id={brand.id}
+            name={brand.name}
             url={brand.url}
             onPress={handleBrandSelection}
-            selected={selectedBrands.includes(brand.id)}
+            selected={selectedBrands.includes(brand.name)}
           />
         ))}
       </View>

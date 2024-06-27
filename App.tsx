@@ -2,29 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import HomeTab from './tabs/Home';
-import CartTab from './tabs/Cart';
-import AccountTab from './tabs/Account';
-import LikedScreen from './tabs/Liked';
+
 import useAuth from './hooks/useAuth';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
-import { CartProvider } from './context/CartContext';
-import { LikedProvider } from './context/LikedContext';
-import { CollectionsProvider } from './context/CollectionsContext';
+
 import OnboardingScreen from './screens/OnboardingScreen';
 import { supabase } from './lib/supabase';
-import EndScreen from './screens/OnboardingScreens/EndScreen';
 import MainTabs from './tabs/Main';
 
-const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const App: React.FC = () => {
   const { user } = useAuth();
-  const [onboarded, setOnboarded] = useState<boolean>(false);
+  const [onboarded, setOnboarded] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,6 +58,7 @@ const App: React.FC = () => {
       {!loading && (
         <>
           {user ? (
+            
             onboarded ? (
               <MainTabs/>
             ) : (

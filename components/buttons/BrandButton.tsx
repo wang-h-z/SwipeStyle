@@ -3,15 +3,15 @@ import { StyleSheet, TouchableOpacity, Image, View } from 'react-native';
 import { AntDesign } from '@expo/vector-icons'; // Import AntDesign icon library
 
 interface BrandButtonProps {
-  id: string;
   url: string;
+  name: string;
   onPress: (id: string) => void; 
   selected: boolean; 
 }
 
-const BrandButton: React.FC<BrandButtonProps> = ({ id, url, onPress, selected }) => {
+const BrandButton: React.FC<BrandButtonProps> = ({ name, url, onPress, selected }) => {
   const handlePress = () => {
-    onPress(id); 
+    onPress(name); 
   };
 
   return (
