@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
 
 interface PriceButtonProps {
-  id: string; // Ensure PriceButtonProps includes an 'id' prop
+  id: string;
   label: string;
   activeButton: string | null;
   handleButtonPress: (id: string) => void;
@@ -11,12 +11,12 @@ interface PriceButtonProps {
 const PriceButton: React.FC<PriceButtonProps> = ({ id, label, activeButton, handleButtonPress }) => {
   return (
     <TouchableOpacity
-      key={id} // Ensure each button has a unique key
+      key={id} 
       style={[
         styles.button,
         activeButton === id && styles.activeButton,
       ]}
-      onPress={() => handleButtonPress(id)}
+      onPress={() => handleButtonPress(id)} 
     >
       <Text style={styles.buttonText}>{label}</Text>
     </TouchableOpacity>
