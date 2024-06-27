@@ -3,14 +3,15 @@ import { StyleSheet, View, Text, Dimensions, SafeAreaView, Alert } from 'react-n
 import NextButton from '../../components/buttons/NextButton';
 import BackButton from '../../components/buttons/BackButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { supabase } from '../../lib/supabase'; // Import Supabase instance
-import useAuth from '../../hooks/useAuth'; // Assuming useAuth hook provides access to user
+import { supabase } from '../../lib/supabase'; 
+import useAuth from '../../hooks/useAuth'; 
+import MainTabs from '../../tabs/Main';
 
 const { width, height } = Dimensions.get('screen');
 
 const EndScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  const { user } = useAuth(); // Assuming useAuth hook provides user information
+  const { user } = useAuth(); 
 
   const handleNext = async () => {
     if (user) {
@@ -30,7 +31,7 @@ const EndScreen: React.FC = () => {
           }
         } else {
           console.log('Onboarded status updated successfully');
-          navigation.navigate('Home'); // Navigate to Home screen after update
+          navigation.navigate('MainTabs'); 
         }
       } catch (error) {
         if (error instanceof Error) {

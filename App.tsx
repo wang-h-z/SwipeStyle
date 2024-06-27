@@ -16,6 +16,8 @@ import { LikedProvider } from './context/LikedContext';
 import { CollectionsProvider } from './context/CollectionsContext';
 import OnboardingScreen from './screens/OnboardingScreen';
 import { supabase } from './lib/supabase';
+import EndScreen from './screens/OnboardingScreens/EndScreen';
+import MainTabs from './tabs/Main';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -99,7 +101,9 @@ const App: React.FC = () => {
                 </LikedProvider>
               </CartProvider>
             ) : (
-              <OnboardingScreen />
+              <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+              </Stack.Navigator>
             )
           ) : (
             <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>

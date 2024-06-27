@@ -4,23 +4,21 @@ import React, { useState } from 'react';
 interface PrefButtonProps {
   colorCode: string;
   colorText: string;
+  onPress: () => void;
+  selected: boolean;
 }
 
-const PrefButton: React.FC<PrefButtonProps> = ({ colorCode, colorText }) => {
-  const [isPressed, setIsPressed] = useState(false);
-
+const PrefButton: React.FC<PrefButtonProps> = ({ colorCode, colorText, onPress, selected }) => {
   return (
     <TouchableOpacity 
-      style={[styles.button, isPressed && styles.buttonPressed]} 
-      onPressIn={() => setIsPressed(true)} 
-      onPressOut={() => setIsPressed(false)}
+      style={[styles.button, selected && styles.buttonPressed]} 
+      onPress={onPress}
     >
-    <View style={styles.wrapper}>
-    <View style={[styles.colorCircle, { backgroundColor: colorCode }]} />
-    <Text style={styles.text}>{colorText}</Text>
-    </View>
+      <View style={styles.wrapper}>
+        <View style={[styles.colorCircle, { backgroundColor: colorCode }]} />
+        <Text style={styles.text}>{colorText}</Text>
+      </View>
     </TouchableOpacity>
-    
   );
 };
 

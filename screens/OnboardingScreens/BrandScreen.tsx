@@ -16,18 +16,13 @@ const BrandScreen: React.FC = () => {
 
   const handleBrandSelection = (id: string) => {
     setSelectedBrands(prevSelectedBrands => {
-      const index = prevSelectedBrands.indexOf(id);
-      if (index === -1) {
-        // Brand not selected, add it
-        console.log('1');
-        return [...prevSelectedBrands, id];
-      } else {
-        // Brand already selected, remove it
-        console.log('2');
-        return prevSelectedBrands.filter(brandId => brandId !== id);
-      }
+        const updatedBrands = prevSelectedBrands.includes(id) 
+            ? prevSelectedBrands.filter(brandId => brandId !== id)
+            : [...prevSelectedBrands, id];
+        return updatedBrands;
     });
-  };
+};
+
   
 
   const handleNext = async () => {
@@ -85,7 +80,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'white', // Set background color to ensure it covers the entire screen
+    backgroundColor: 'white', 
   },
   title: {
     justifyContent: 'center',
