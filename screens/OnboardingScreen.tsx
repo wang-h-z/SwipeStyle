@@ -6,6 +6,7 @@ import BrandScreen from './OnboardingScreens/BrandScreen';
 import ColourPrefScreen from './OnboardingScreens/ColourPrefScreen';
 import PriceRangeScreen from './OnboardingScreens/PriceRangeScreen';
 import EndScreen from './OnboardingScreens/EndScreen';
+import MainTabs from '../tabs/Main';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ const OnboardingScreen = () => {
         <Stack.Screen name='ColourPrefScreen' component={ColourPrefScreen} />
         <Stack.Screen name='PriceRangeScreen' component={PriceRangeScreen} />
         <Stack.Screen name='EndScreen' component={EndScreen}/>
+        <Stack.Screen name='Main' component={MainTabs}/>
       </Stack.Navigator>
   )
 }

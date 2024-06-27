@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import React from 'react';
 
 interface PriceButtonProps {
-  id: string;
+  id: string; // Ensure PriceButtonProps includes an 'id' prop
   label: string;
   activeButton: string | null;
   handleButtonPress: (id: string) => void;

@@ -67,39 +67,7 @@ const App: React.FC = () => {
         <>
           {user ? (
             onboarded ? (
-              <CartProvider>
-                <LikedProvider>
-                  <CollectionsProvider>
-                    <Tab.Navigator
-                      initialRouteName='Home'
-                      screenOptions={({ route }) => ({
-                        tabBarIcon: ({ focused, color, size }) => {
-                          let iconName;
-
-                          if (route.name === 'Home') {
-                            iconName = focused ? 'home' : 'home-outline';
-                          } else if (route.name === 'Cart') {
-                            iconName = focused ? 'cart' : 'cart-outline';
-                          } else if (route.name === 'Account') {
-                            iconName = focused ? 'person' : 'person-outline';
-                          } else if (route.name === 'Liked') {
-                            iconName = focused ? 'heart' : 'heart-outline';
-                          }
-
-                          return <Ionicons name={iconName as any} size={size} color={color} />;
-                        },
-                        tabBarActiveTintColor: 'turquoise',
-                        tabBarInactiveTintColor: 'gray',
-                      })}
-                    >
-                      <Tab.Screen name="Home" component={HomeTab} />
-                      <Tab.Screen name="Liked" component={LikedScreen} options={{ headerShown: false }} />
-                      <Tab.Screen name="Cart" component={CartTab} />
-                      <Tab.Screen name="Account" component={AccountTab} />
-                    </Tab.Navigator>
-                  </CollectionsProvider>
-                </LikedProvider>
-              </CartProvider>
+              <MainTabs/>
             ) : (
               <Stack.Navigator initialRouteName="Onboarding" screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Onboarding" component={OnboardingScreen} />

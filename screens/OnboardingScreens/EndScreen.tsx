@@ -5,7 +5,7 @@ import BackButton from '../../components/buttons/BackButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase'; 
 import useAuth from '../../hooks/useAuth'; 
-import MainTabs from '../../tabs/Main';
+import Main from '../../tabs/Main';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -31,7 +31,7 @@ const EndScreen: React.FC = () => {
           }
         } else {
           console.log('Onboarded status updated successfully');
-          navigation.navigate('MainTabs'); 
+          navigation.navigate('Main'); 
         }
       } catch (error) {
         if (error instanceof Error) {
