@@ -62,7 +62,7 @@ const RegisterScreen: React.FC = () => {
           Alert.alert('Error', insertError.message);
         } else {
           Alert.alert('Success', 'User registered successfully');
-          navigation.navigate('Login'); // Navigate to the login screen or any other screen
+          navigation.navigate('Login'); // Navigate to the onboarding screen
         }
       }
     } catch (error) {

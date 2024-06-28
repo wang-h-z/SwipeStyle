@@ -46,7 +46,7 @@ export default function Home() {
         setLoading(true);
         setError(null);
         try {
-            console.log('Fetching data');
+            console.log('Fetching clothing data');
             const response = await axios.get(`https://styleswipe.azurewebsites.net/Men/getUniqloTops`, {
                 headers: {
                     'Cache-Control': 'no-cache',
