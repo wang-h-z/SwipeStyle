@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase'; 
 import { User } from '@supabase/supabase-js'; // Import the necessary types
 
-export default function useAuth() {
+export default function useAuthHook() {
   const [user, setUser] = useState<User & { name?: string } | null>(null);
 
   useEffect(() => {

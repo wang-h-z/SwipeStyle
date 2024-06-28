@@ -4,15 +4,23 @@ import NextButton from '../../components/buttons/NextButton';
 import BackButton from '../../components/buttons/BackButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase'; 
-import useAuth from '../../hooks/useAuth'; 
+import { useAuth } from '../../context/AuthContext';
 import Main from '../../tabs/Main';
 
 const { width, height } = Dimensions.get('screen');
 
 const EndScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  const { user } = useAuth(); 
+  const { user, setOnboarded } = useAuth(); 
 
+
+  const navigateToHome = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainTabs' }],
+    });
+  };
+  
   const handleNext = async () => {
     if (user) {
       try {
@@ -31,7 +39,12 @@ const EndScreen: React.FC = () => {
           }
         } else {
           console.log('Onboarded status updated successfully');
-          navigation.navigate('Main'); 
+          setOnboarded(true);
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'MainTabs' }],
+          });
+          
         }
       } catch (error) {
         if (error instanceof Error) {
@@ -40,6 +53,7 @@ const EndScreen: React.FC = () => {
         } else {
           console.error('Unexpected error:', error);
           Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+          
         }
       }
     } else {

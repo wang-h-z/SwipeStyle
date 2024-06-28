@@ -1,27 +1,20 @@
-import React, { useState,  useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppState, AppStateStatus, View, Text } from 'react-native';
 import axios from 'axios';
 import SwipeCard from "../components/SwipeCard";
-import { UniqloData } from '../types/UniqloData';
-
-//ClothesData interface for data fetched from API
-type ColorMapping = {
-    code: string;
-    displayCode: string;
-    name: string;
-  };
-
+import { ClothesData } from '../types/ClothesData';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function Home() {
-    const [clothes, setClothes] = useState<UniqloData[]>([]);
-    const [colors, setColors] = useState<ColorMapping[]>([]);
-
+    const [clothes, setClothes] = useState<ClothesData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
     const appState = useRef(AppState.currentState);
+    const { user } = useAuth();
 
     useEffect(() => {
-
+        /** 
         const handleAppStateChange = (nextAppState: AppStateStatus) => {
             console.log('AppState changed from', appState.current, 'to', nextAppState);
             if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
@@ -33,21 +26,51 @@ export default function Home() {
 
         const listen = AppState.addEventListener('change', handleAppStateChange);
 
-        // Initial data fetch       
-        fetchData();
+        // Initial data fetch 
+        
 
         return () => {
-            
             listen.remove();
         };
+        */
+
+        fetchData();
+        
     }, []);
+
+    const fetchUserData = async () => {
+        console.log("Fetching user data");
+        if (user) {
+            try {
+                const { data: profile, error } = await supabase
+                    .from('users')
+                    .select('gender, brands')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                return profile;
+
+            } catch (err) {
+                console.error('Error fetching user data:', err);
+                throw err;
+            }
+        }
+    }
 
     const fetchData = async () => {
         setLoading(true);
         setError(null);
+
         try {
+            const profile = await fetchUserData();
+            const { gender, brands } = profile || {};
+
             console.log('Fetching clothing data');
-            const response = await axios.get(`https://styleswipe.azurewebsites.net/Men/getUniqloTops`, {
+            const response = await axios.get(`https://styleswipe.azurewebsites.net/${gender}/get${brands[0]}Tops`, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
@@ -56,7 +79,6 @@ export default function Home() {
             });
             if (response.data) {
                 setClothes(response.data[0].clothes_data);
-                setColors(response.data[0].colors);
                 console.log('setClothes called');
             } else {
                 console.error('Unexpected response structure:', response.data);
@@ -69,34 +91,21 @@ export default function Home() {
         }
     };
 
-    //Can add loading screen here
     if (loading) {
         console.log("loading");
         return <View><Text>Loading...</Text></View>;
     }
 
-    //Can add Error page here
     if (error) {
         return <View><Text>Error fetching data: {error.message}</Text></View>;
     }
 
-    const colorMapping: {[key: string]: string} = {};
-    colors.forEach(mapping => {
-        colorMapping[mapping.displayCode] = mapping.name;
-    });
-    clothes.forEach(i => {
-        i.image.forEach(j => {
-            j.colorString = colorMapping[j.colorCode] || j.colorCode;
-        })
-    })
-
-    //Add a starting index for the image array
     const data = clothes.map((item, index) => ({
         ...item,
         start: Math.floor(Math.random() * item.image.length),
         quantity: 1,
     }));
-        
+
     return (
         <SwipeCard dummy={data} />
     );

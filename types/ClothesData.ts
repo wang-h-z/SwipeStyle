@@ -1,4 +1,4 @@
-export interface UniqloData {
+export interface ClothesData {
 
     productID: string,
     name: string,  
@@ -6,7 +6,7 @@ export interface UniqloData {
     image: Array<Image>,  
     gender: string
     sizes: Array<string>,
-    rating?: Rating,
+    rating: Rating | string,
     brand: string,
     longDescription: string,
     composition: string,
@@ -22,5 +22,4 @@ interface Rating {
 interface Image {
     url: string,
     colorString: string,
-    colorCode: string
 }

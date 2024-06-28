@@ -38,6 +38,7 @@ const RegisterScreen: React.FC = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
 
   const supabaseSubmit = async (values: FormValues) => {
+    console.log("Submitting signup")
     try {
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -62,7 +63,7 @@ const RegisterScreen: React.FC = () => {
           Alert.alert('Error', insertError.message);
         } else {
           Alert.alert('Success', 'User registered successfully');
-          navigation.navigate('Login'); // Navigate to the onboarding screen
+          
         }
       }
     } catch (error) {

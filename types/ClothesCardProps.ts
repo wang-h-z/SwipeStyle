@@ -1,6 +1,6 @@
-import { UniqloData } from "./UniqloData";
+import { ClothesData } from "./ClothesData";
 
-export interface ClothesCardProps extends UniqloData {
+export interface ClothesCardProps extends ClothesData {
     start:number,
     quantity: number;
 }

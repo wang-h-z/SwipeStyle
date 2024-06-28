@@ -19,8 +19,6 @@ const Stack = createNativeStackNavigator();
 
 
 const OnboardingScreen = () => {
-
-
   return (
     <GenderProvider>
       <Stack.Navigator screenOptions={{headerShown:false}}>
@@ -30,7 +28,7 @@ const OnboardingScreen = () => {
         <Stack.Screen name='PriceRangeScreen' component={PriceRangeScreen} />
         <Stack.Screen name='EndScreen' component={EndScreen}/>
         
-        <Stack.Screen name='Main' component={MainTabs}/>
+        
         
       </Stack.Navigator>
     </GenderProvider>
