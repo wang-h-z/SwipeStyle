@@ -35,7 +35,7 @@ export default function Home() {
         */
 
         fetchData();
-        
+
     }, []);
 
     const fetchUserData = async () => {
@@ -68,9 +68,12 @@ export default function Home() {
         try {
             const profile = await fetchUserData();
             const { gender, brands } = profile || {};
-
+            const brandString =  brands.join(",");
             console.log('Fetching clothing data');
-            const response = await axios.get(`https://styleswipe.azurewebsites.net/${gender}/get${brands[0]}Tops`, {
+            
+            const url = `https://styleswipe.azurewebsites.net/${gender}/getStack?brands=${brandString}`
+
+            const response = await axios.get(url, {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
@@ -78,7 +81,7 @@ export default function Home() {
                 },
             });
             if (response.data) {
-                setClothes(response.data[0].clothes_data);
+                setClothes(response.data.clothes_data);
                 console.log('setClothes called');
             } else {
                 console.error('Unexpected response structure:', response.data);
