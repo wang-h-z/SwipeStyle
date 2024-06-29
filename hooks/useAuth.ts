@@ -22,7 +22,7 @@ export default function useAuthHook() {
 
           if (profileError) {
             console.error('Error fetching profile:', profileError.message);
-            setUser(null); // Set user without name if there's an error
+            setUser(user); // Set user without name if there's an error
           } else {
             setUser({ ...user, ...profile }); // Merge user object with profile data
           }

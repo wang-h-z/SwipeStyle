@@ -20,8 +20,8 @@ export default function WelcomeScreen() {
       <Image style={styles.image} source={require('../assets/shopping.jpeg')} />
       <Text style={styles.title}>Welcome to {"\n"} StyleSwipe</Text>
       <Text style={styles.text}>A one-stop app for all your {"\n"} shopping needs!</Text>
-      <LoginButton title="Login" color="#778da9" onPress={LoginPress}></LoginButton>
-      <LoginButton title="Register" onPress={RegisterPress}></LoginButton>
+      <LoginButton title="Login" color="#778da9" onPress={LoginPress} testID='LoginButtonWelcScreen'></LoginButton>
+      <LoginButton title="Register" onPress={RegisterPress} testID='RegisterButtonWelcScreen'></LoginButton>
     </View>
   );
 }

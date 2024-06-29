@@ -38,7 +38,7 @@ const MainTabs: React.FC = () => {
               tabBarInactiveTintColor: 'gray',
             })}
           >
-            <Tab.Screen name="Home" component={Home} />
+            <Tab.Screen name="Home" component={Home} options={{ tabBarTestID: 'home-tab' }} />
             <Tab.Screen name="Liked" component={Liked} options={{ headerShown: false }} />
             <Tab.Screen name="Cart" component={Cart} />
             <Tab.Screen name="Account" component={Account} />

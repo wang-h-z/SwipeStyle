@@ -71,10 +71,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setOnboarded(false);
       }
     });
-
+    /*
     return () => {
       authListener?.subscription.unsubscribe();
     };
+    */
   }, []);
 
   return (
