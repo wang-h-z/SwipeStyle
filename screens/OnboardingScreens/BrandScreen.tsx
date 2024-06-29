@@ -19,7 +19,7 @@ const BrandScreen: React.FC = () => {
   const { user } = useAuth();
   const navigation = useNavigation<NavigationProp<any>>();
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [brands, setBrands] = useState<Brands[]|null>(null);
+  const [brands, setBrands] = useState<Brands[]>([]);
   const { gender } = useGender();
 
   const handleBrandSelection = (id: string) => {
@@ -32,7 +32,7 @@ const BrandScreen: React.FC = () => {
   };
 
   const handleNext = async () => {
-    if (user) {
+    if (user && selectedBrands.length > 0) {
       try {
         const { error } = await supabase
           .from('users')
@@ -52,13 +52,17 @@ const BrandScreen: React.FC = () => {
         Alert.alert('Error', 'An unexpected error occurred. Please try again.');
       }
     } else {
-      Alert.alert('Error', 'User not found. Please log in again.');
+      if(!user){
+        Alert.alert('Error', 'User not found. Please log in again.');
+      } else {
+        Alert.alert('Error', 'No brands selected. Please select at least 1 brand.');
+      }
     }
   };
   
   const getBrands = async () => {
     try {
-      console.log('Fetching data');
+      console.log('Fetching Brands Data');
       //console.log('Gender: '+gender)
       const response = await axios.get(`https://styleswipe.azurewebsites.net/getBrands${gender}`, {
           headers: {
@@ -69,7 +73,7 @@ const BrandScreen: React.FC = () => {
       });
       if (response.data) {
           setBrands(response.data);
-          console.log(brands);
+          //console.log(brands);
       } else {
           console.error('Unexpected response structure:', response.data);
       }
@@ -91,7 +95,7 @@ const BrandScreen: React.FC = () => {
       {brands && <View style={styles.buttonWrapper}>
         {brands.map((i) => (
           <BrandButton
-            
+            key={brands.indexOf(i)}
             name={i.brand}
             url={i.image}
             onPress={handleBrandSelection}

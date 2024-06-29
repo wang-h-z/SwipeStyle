@@ -38,17 +38,22 @@ const RegisterScreen: React.FC = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
 
   const supabaseSubmit = async (values: FormValues) => {
-    console.log("Submitting signup")
     try {
+      console.log("Submitting signup")
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
       });
 
+      //console.log(data)
+      
       if (error) {
         console.error('Error registering user:', error.message);
         Alert.alert('Error', error.message);
-      } else if (data.user) {
+        return;
+      }
+
+      if (data.user) {
         console.log('User registered with:', data.user.email);
 
         // Insert the user's name into the users table
@@ -56,21 +61,21 @@ const RegisterScreen: React.FC = () => {
           .from('users')
           .insert({ id: data.user.id, name: values.name });
 
-          console.log(data.user.id)
+        //console.log(data.user.id)
 
         if (insertError) {
           console.error('Error inserting user profile:', insertError.message);
           Alert.alert('Error', insertError.message);
         } else {
           Alert.alert('Success', 'User registered successfully');
-          navigation.navigate('Login');
         }
       }
+
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error registering user:', error.message);
         Alert.alert('Error', error.message);
-      } else {
+      } else { 
         console.error('Unexpected sign up error:', error);
         Alert.alert('Error', 'An unexpected error occurred');
       }
