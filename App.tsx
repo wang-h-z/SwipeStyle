@@ -8,7 +8,6 @@ import RegisterScreen from './screens/RegisterScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 
 import OnboardingScreen from './screens/OnboardingScreen';
-import { supabase } from './lib/supabase';
 import MainTabs from './tabs/Main';
 
 import { AuthProvider, useAuth } from './context/AuthContext';

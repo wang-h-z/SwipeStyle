@@ -63,7 +63,7 @@ const RegisterScreen: React.FC = () => {
           Alert.alert('Error', insertError.message);
         } else {
           Alert.alert('Success', 'User registered successfully');
-          
+          navigation.navigate('Login');
         }
       }
     } catch (error) {
