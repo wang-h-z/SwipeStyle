@@ -4,8 +4,8 @@ import PriceButton from '../../components/buttons/PriceButton';
 import NextButton from '../../components/buttons/NextButton';
 import BackButton from '../../components/buttons/BackButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { supabase } from '../../lib/supabase'; // Import supabase instance
-import PriceData from '../../data/PriceData'; // Import your price ranges data
+import { supabase } from '../../lib/supabase'; 
+import PriceData from '../../data/PriceData'; 
 import useAuth from '../../hooks/useAuth';
 
 const { width, height } = Dimensions.get('screen');

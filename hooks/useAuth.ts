@@ -18,7 +18,7 @@ export default function useAuthHook() {
             .from('users')
             .select('name')
             .eq('id', user.id)
-            .single();
+            .limit(1)
 
           if (profileError) {
             console.error('Error fetching profile:', profileError.message);
@@ -41,7 +41,7 @@ export default function useAuthHook() {
           .from('users')
           .select('name')
           .eq('id', user.id)
-          .single()
+          .limit(1)
           .then(({ data: profile, error: profileError }) => {
             if (profileError) {
               console.error('Error fetching profile:', profileError.message);

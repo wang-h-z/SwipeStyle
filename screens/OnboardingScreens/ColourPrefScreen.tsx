@@ -79,42 +79,6 @@ export default function ColourPrefScreen() {
   );
 }
 
-const stylesa = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-  title: {
-    justifyContent: 'center',
-    padding: 16,
-    alignSelf: 'flex-start',
-  },
-  titleText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'left',
-    padding: 4,
-  },
-  description: {
-    fontSize: 20,
-    padding: 4,
-  },
-  scrollViewContent: {
-    alignItems: 'center',
-  },
-  backButtonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-  },
-  nextButtonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-  },
-});
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
