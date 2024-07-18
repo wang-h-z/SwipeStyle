@@ -37,8 +37,9 @@ const Collections = () => {
     };
 
     const handleTap = (item: CollectionProps) => {       
-        if (!item) {
-            Alert.alert('Error', 'Add items to the collection');
+        if (item.items.length === 0) {
+            Alert.alert('Error', 'Add items to mood board first');
+            return;
         };
         
         setSelectedItem(item);
@@ -183,6 +184,7 @@ const Collections = () => {
                         renderItem={renderCollection}
                         keyExtractor={(item) => item.name}
                         contentContainerStyle={styles.collectionList}
+                        showsVerticalScrollIndicator={false}
                     />
                 </View>
                 )}
@@ -261,25 +263,32 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         position: 'absolute',
-        top: 40,
+        top: -30,
         left: 0,
         right: 0,
         zIndex: 1,
         marginTop: 30,
+        backgroundColor: 'white',
+        height: 100,
     },
     backButton: {
         position: 'absolute',
         left: 20,
+        alignSelf: 'flex-end',
+        paddingBottom:10,
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
+        alignSelf:'flex-end',
+        paddingBottom:10,
     },
     collectionList: {
         padding: 5,
         marginTop: 120,
         marginBottom: 200,
+        paddingBottom: 150,
     },
     collectionItem: {
         flexDirection: 'row',

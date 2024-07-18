@@ -183,7 +183,7 @@ const LikedScreen: React.FC = () => {
 
               <Text style={styles.price}>{selectedItem.price[0] + parseFloat(selectedItem.price[1]).toFixed(2)}</Text>
                           
-              {selectedItem.rating?.average && 
+              {typeof(selectedItem.rating) !== "string" && selectedItem.rating.average !== null && 
                 <Text style={styles.price}>{selectedItem.rating.average.toFixed(2)} ⭐ ({selectedItem.rating.count})</Text>
               }
               </View>

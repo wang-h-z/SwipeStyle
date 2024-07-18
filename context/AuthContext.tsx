@@ -4,7 +4,8 @@ import useAuthHook from '../hooks/useAuth';
 
 interface User {
   id: string;
-  // Add other user properties if needed
+  email?: string;
+  
 }
 
 interface AuthContextType {
@@ -71,11 +72,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setOnboarded(false);
       }
     });
-    /*
+    
     return () => {
       authListener?.subscription.unsubscribe();
     };
-    */
+    
   }, []);
 
   return (

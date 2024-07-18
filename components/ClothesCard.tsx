@@ -11,11 +11,14 @@ import {
   FlatList,
   Image,
   Touchable,
+  Alert,
 } from "react-native";
 import { ClothesCardProps } from "../types/ClothesCardProps";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCollections } from "../context/CollectionsContext";
+import { useLiked } from "../context/LikedContext";
+import { Button } from "@rneui/themed";
 const { width, height } = Dimensions.get("window");
 
 interface Collection {
@@ -35,14 +38,16 @@ export default function ClothesCard(props: {
   leftTap: () => void;
   rightTap: () => void;
   triggerRightSwipe: () => void;
+  collectionModal: () => void;
 
 }) {
   const { name, price, image } = props.clothesData;
-  const { start, setStart, leftTap, rightTap, triggerRightSwipe } = props;
+  const { start, setStart, leftTap, rightTap, triggerRightSwipe, collectionModal } = props;
 
   const final_price = price[0] + parseFloat(price[1]).toFixed(2);
 
-  const { addItem, collections } = useCollections();
+  const { addItem, collections, newCollection } = useCollections();
+  const { addToLiked } = useLiked();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CartProps | null>(null);
 
@@ -57,15 +62,43 @@ export default function ClothesCard(props: {
 
   const saveButton = (item: CartProps) => {
     setModalVisible(true);
+    collectionModal();
     setSelectedItem(item);
     
   };
 
   const addToCollection = (name: string) => {
     addItem(name, selectedItem!);
+    addToLiked(selectedItem!, selectedItem!.imageNo);
     setModalVisible(false);
+    collectionModal();
     setSelectedItem(null);
     triggerRightSwipe();
+  }
+
+  const createCollection = () => {
+    Alert.prompt(
+      "Create a new mood board",
+      "",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        {
+          text: "Create",
+          onPress: name => {
+            if (name) {
+              newCollection(name);
+            } else {
+              Alert.alert("Error", "Name cannot be empty");
+            }
+          }
+        }
+      ],
+      "plain-text",
+    );
   }
 
   const renderCollectionList = ({ item }: { item: Collection }) => {
@@ -127,21 +160,35 @@ export default function ClothesCard(props: {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(!modalVisible)}
+        onRequestClose={() => {
+          setModalVisible(false);
+          collectionModal();
+        }}
       >
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => {
+          setModalVisible(false)
+          collectionModal();
+          }}>
           <View style={styles.overlay}>
             <TouchableWithoutFeedback>
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                  <Text style={styles.modalText}>Choose your mood board</Text>
+                  {collections.length > 0 &&
+                    <Text style={styles.modalText}>Choose your mood board</Text>
+                    
+                  }
+                  {collections.length === 0 &&
+                    <Text>Create a mood board to get started</Text>
+                  }
                   <FlatList
                     data={collections}
                     renderItem={renderCollectionList}
                     keyExtractor={(item) => item.title}
                     contentContainerStyle={{ padding: 5 }}
                     style={{ width: "100%" }}
+                    showsVerticalScrollIndicator={false}
                   />
+                  <Button onPress={() => createCollection()}>New mood board</Button>
                 </View>
               </View>
             </TouchableWithoutFeedback>
