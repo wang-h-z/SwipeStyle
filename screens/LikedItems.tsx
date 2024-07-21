@@ -1,15 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image, Text, Modal, ScrollView, Dimensions, Alert } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, Image, Text, Modal, ScrollView, Dimensions, Alert, TouchableWithoutFeedback } from 'react-native';
 import { ClothesCardProps } from '../types/ClothesCardProps';
 import { useLiked } from '../context/LikedContext';
 import Ionicons from 'react-native-vector-icons/Ionicons'; 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LoginButton from '../components/LoginButton';
+import { Button } from "@rneui/themed";
+const { width, height } = Dimensions.get("window");
+
 import { useCart } from '../context/CartContext';
+import { useCollections } from "../context/CollectionsContext";
+
 import DropdownComponent from '../components/DropDown';
 
 interface CartProps extends ClothesCardProps {
   imageNo: number;
+}
+
+interface Collection {
+  title: string;
+  items: CartProps[];
+  itemNo: number;
 }
 
 const LikedScreen: React.FC = () => {
@@ -19,6 +30,9 @@ const LikedScreen: React.FC = () => {
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [longPressItem, setLongPressItem] = useState<CartProps | null>(null);
+
   const modalOpenedRef = useRef(false);
   
   const scrollViewRef = useRef<ScrollView>(null);
@@ -26,6 +40,7 @@ const LikedScreen: React.FC = () => {
   const screenHeight = Dimensions.get('window').height;
   
   const { addToCart } = useCart();
+  const { addItem, collections, newCollection } = useCollections();
   
   const addCart = (item: CartProps) => {
     if (!size) {
@@ -55,14 +70,20 @@ const LikedScreen: React.FC = () => {
       <Image source={{ uri: item.image[item.imageNo].url }} style={styles.likedItemImage} />
       </TouchableOpacity>  
       
+      
       <View style={styles.likedItemDetails}>
+      <TouchableOpacity onLongPress={() => {
+        setLongPressItem(item)
+        setModalVisible(true);
+      }}>
         <Text style={styles.likedItemName}>{item.name}</Text>
         <Text style={styles.likedItemPrice}>{item.price[0] + parseFloat(item.price[1]).toFixed(2)}</Text>
         <Text style={styles.likedItemPrice}>
           {item.image[item.imageNo].colorString}
         </Text>
+      </TouchableOpacity>
       </View>
-
+      
       <TouchableOpacity
           style={{    
             position: 'absolute',
@@ -126,8 +147,49 @@ const LikedScreen: React.FC = () => {
       setColor(selectedItem.image[newIndex].colorString);
     }
   };
+  const addToCollection = (name: string) => {
+    addItem(name, {...longPressItem!});
+    setModalVisible(false);
 
-  
+    setLongPressItem(null);
+  }
+  const renderCollectionList = ({ item }: { item: Collection }) => {
+
+    return (
+      <View style={styles.collection}>
+        <TouchableOpacity onPress={() => addToCollection(item.title)}>
+        <View style={styles.collectionInfo}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={{alignSelf: "center",}}>{item.itemNo} items</Text>
+        </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const createCollection = () => {
+    Alert.prompt(
+      "Create a new mood board",
+      "",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        {
+          text: "Create",
+          onPress: name => {
+            if (name) {
+              newCollection(name);
+            } else {
+              Alert.alert("Error", "Name cannot be empty");
+            }
+          }
+        }
+      ],
+      "plain-text",
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -149,6 +211,7 @@ const LikedScreen: React.FC = () => {
       >
         <View style={styles.modalContainer}>
           <TouchableOpacity style={styles.backButton} onPress={() => {
+            likedItems.find((item) => item.name === selectedItem?.name && (item.imageNo = selectedItem.imageNo));
             setSelectedItem(null)
             modalOpenedRef.current = false;
           }}>
@@ -189,7 +252,8 @@ const LikedScreen: React.FC = () => {
               </View>
               
               <Text style={styles.info}>{selectedItem.name}</Text>  
-              
+              <Text style={styles.info}><Text style={{fontWeight:'bold'}}>Brand: </Text>{selectedItem.brand}</Text>
+
               <View style={{
                 flexDirection:'row', 
                 justifyContent: 'space-between', width: '100%',
@@ -209,13 +273,51 @@ const LikedScreen: React.FC = () => {
               />
 
               </View>
-              <LoginButton title='Add to Cart' color='black' textColor='white' opStyles={{marginBottom: 120}} onPress={() => {addCart(selectedItem)}}/>
+
+              <LoginButton title='Add to Cart' color='black' textColor='white' opStyles={{marginBottom: 0}} onPress={() => {addCart(selectedItem)}}/>
 
               
 
             </ScrollView>
           )}
         </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setModalVisible(false)
+          }}>
+          <View style={styles.overlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  {collections.length > 0 &&
+                    <Text style={styles.modalText}>Choose your mood board</Text>
+                    
+                  }
+                  {collections.length === 0 &&
+                    <Text>Create a mood board to get started</Text>
+                  }
+                  <FlatList
+                    data={collections}
+                    renderItem={renderCollectionList}
+                    keyExtractor={(item) => item.title}
+                    contentContainerStyle={{ padding: 5 }}
+                    style={{ width: "100%" }}
+                    showsVerticalScrollIndicator={false}
+                  />
+                  <Button onPress={() => createCollection()}>New mood board</Button>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -252,6 +354,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     flex: 1,
     justifyContent: 'center',
+    
   },
   likedItemName: {
     fontSize: 16,
@@ -307,6 +410,60 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginLeft: 8,
     marginBottom: 5,
+  },
+  collection: {
+    flexDirection: "row",
+    marginBottom: 20,
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+    width: "100%",
+    height: 50,
+    
+  },
+ 
+  collectionInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "left",
+    alignSelf: "center",
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  centeredView: {
+    width: "100%",
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+  modalView: {
+    width: width,
+    height: height / 2,
+    backgroundColor: "white",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 
 });

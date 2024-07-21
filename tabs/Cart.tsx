@@ -289,6 +289,7 @@ const Cart: React.FC = () => {
               </View>
               
               <Text style={styles.info}>{selectedItem.name}</Text>  
+              <Text style={styles.info}><Text style={{fontWeight:'bold'}}>Brand: </Text>{selectedItem.brand}</Text>
               
               <View style={{
                 flexDirection:'row', 

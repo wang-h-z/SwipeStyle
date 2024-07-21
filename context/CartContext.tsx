@@ -91,9 +91,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (item: ClothesCardProps, imgNo: number, size?:string) => {
-    const newItem = { ...item, imageNo: imgNo, size: size || 'L' };
-    setCartItems((prevItems) => [...prevItems, newItem]);
-  };
+      const newItem = { ...item, imageNo: imgNo, size: size || 'L' };
+      if (cartItems.some(cartItem => cartItem.productID === newItem.productID)) {
+        return;
+      }
+      setCartItems((prevItems) => [...prevItems, newItem]);
+    };
 
   const removeFromCart = (id: string, imageNo: number, size: string) => {
     setCartItems((prevItems) => prevItems.filter(item => item.productID !== id));

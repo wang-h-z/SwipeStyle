@@ -17,11 +17,16 @@ interface LikedProps extends ClothesCardProps {
   imageNo: number;
 }
 
+interface DislikedProps {
+  name: string;
+  brand: string;
+}
+
 const LikedContext = createContext<LikedContextType | undefined>(undefined);
 
 export const LikedProvider: React.FC<LikedProviderProps> = ({ children }) => {
   const [likedItems, setLikedItems] = useState<LikedProps[]>([]);
-  const [dislikedItems, setDislikedItems] = useState<LikedProps[]>([]);
+  const [dislikedItems, setDislikedItems] = useState<DislikedProps[]>([]);
 
   const [fetched, setFetch] = useState<boolean>(false);
   const { user } = useAuth();
@@ -121,9 +126,9 @@ export const LikedProvider: React.FC<LikedProviderProps> = ({ children }) => {
   };
 
   const addToDisliked = (item: ClothesCardProps, imgNo: number) => {
-    const newItem = { ...item, imageNo: imgNo };
+    const newItem = { name: item.name, brand: item.brand, productID: item.productID };
 
-    setDislikedItems((prevItems) => [newItem, ...prevItems]); //Most recent liked item will be at the top
+    setDislikedItems((prevItems) => [newItem, ...prevItems]); 
   };
 
   const removeFromLiked = (id: string) => {
