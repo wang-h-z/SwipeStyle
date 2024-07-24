@@ -76,7 +76,7 @@ const Cart: React.FC = () => {
   const checkOutSuccess = () => {
     addToOrder(
       {
-        orderNo: 'Order: #123456',
+        orderNo: 'Order No: #' + Math.random().toString(36).slice(2),
         items: cartItems,
         itemNo: cartItems.length,
         orderTotal: totalPrice(),
