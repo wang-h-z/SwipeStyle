@@ -1,0 +1,6 @@
+module Pods_OrbitalBlank {
+  umbrella header "Pods-OrbitalBlank-umbrella.h"
+
+  export *
+  module * { export * }
+}
