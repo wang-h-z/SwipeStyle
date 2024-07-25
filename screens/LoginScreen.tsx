@@ -7,7 +7,7 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../lib/supabase';  // Import supabase client
+import { supabase } from '../lib/supabase'; 
 
 interface Form {
     email: string;
@@ -47,8 +47,27 @@ const LoginScreen: React.FC = () => {
       }
     }
   };
-  
 
+  const handlePasswordReset = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) {
+        console.error('Error resetting password:', error.message);
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Success', 'Password reset email sent successfully');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Error resetting password:', error.message);
+        Alert.alert('Error', error.message);
+      } else {
+        console.error('Unexpected error:', error);
+        Alert.alert('Error', 'An unexpected error occurred');
+      }
+    }
+  };
+  
   const temp = () => {
     Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
   };
@@ -94,6 +113,9 @@ const LoginScreen: React.FC = () => {
           <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
         </TouchableOpacity>
       </View>
+      <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => handlePasswordReset(values.email)}>
+          <Text>Forgot Password?</Text>
+      </TouchableOpacity>
       <View style={styles.dividerContainer}>
         <View style={styles.dividerLine} />
         <Text style={styles.dividerText}>or</Text>
@@ -164,12 +186,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '85%',
     alignSelf: 'center',
-    
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     paddingRight:10
+  },
+  forgotPasswordButton: { 
+    alignSelf: 'flex-end',
+    paddingRight: '7%',
+    marginTop: -10, 
   },
   passwordInput: {
     flex: 1,

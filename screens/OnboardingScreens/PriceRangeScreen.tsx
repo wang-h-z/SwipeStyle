@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Dimensions, SafeAreaView, Alert } from 'react-native';
 import PriceButton from '../../components/buttons/PriceButton';
 import NextButton from '../../components/buttons/NextButton';
@@ -7,6 +7,8 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase'; 
 import PriceData from '../../data/PriceData'; 
 import useAuth from '../../hooks/useAuth';
+import { useOnboarding } from '../../context/OnboardingContext';
+import ProgressBar from '../../components/ProgressBar';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -14,17 +16,22 @@ export default function PriceRangeScreen() {
   const [activeButton, setActiveButton] = useState<string | null>(null);
   const navigation = useNavigation<NavigationProp<any>>();
   const { user } = useAuth();
+  const { currentStep, setCurrentStep } = useOnboarding()
 
   const handleButtonPress = (id: string) => {
-    setActiveButton(id); // Set activeButton state
+    setActiveButton(id); 
   };
+
+  useEffect(() => {
+    setCurrentStep(4);
+  }, []);
 
   const handleNextPress = async () => {
     try {
       if (user && activeButton) {
         const { error } = await supabase
           .from('users')
-          .update({ price_range: activeButton }) // Update 'priceRange' field with selected id
+          .update({ price_range: activeButton }) 
           .eq('id', user.id);
 
         if (error) {
@@ -33,7 +40,7 @@ export default function PriceRangeScreen() {
         } else {
           console.log('Price range updated successfully');
           console.log(activeButton)
-          navigation.navigate('EndScreen'); // Navigate to next screen upon successful update
+          navigation.navigate('EndScreen'); 
         }
       } else {
         Alert.alert('Error', 'User not found or price range not selected.');
@@ -46,8 +53,14 @@ export default function PriceRangeScreen() {
     }
   };
 
+  const handleBack = async () => {
+    setCurrentStep(3)
+    navigation.goBack()
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <ProgressBar totalSteps={5} currentStep={currentStep}/>
       <View style={styles.title}>
         <Text style={styles.titleText}>Pick a price range.</Text>
       </View>
@@ -63,7 +76,7 @@ export default function PriceRangeScreen() {
         ))}
       </View>
       <View style={styles.backButtonContainer}>
-        <BackButton onPress={() => navigation.goBack()} />
+        <BackButton onPress={handleBack} />
       </View>
       <View style={styles.nextButtonContainer}>
         <NextButton onPress={handleNextPress} />
@@ -75,7 +88,7 @@ export default function PriceRangeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff', // Set background color to ensure it covers the entire screen
+    backgroundColor: '#fff',
     alignItems: 'center',
   },
   title: {

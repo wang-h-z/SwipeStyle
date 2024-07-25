@@ -13,9 +13,8 @@ const AccountScreen: React.FC = () => {
     }
   };
 
-  // Get user email and name
   const email = user?.email;
-  const name = user?.name || 'John Doe'; // Adjust according to your user metadata
+  const name = user?.user_metadata.name || 'John Doe'; 
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

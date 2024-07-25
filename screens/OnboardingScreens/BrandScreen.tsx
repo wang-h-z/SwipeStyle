@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Dimensions, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
 import NextButton from '../../components/buttons/NextButton';
 import BrandButton from '../../components/buttons/BrandButton';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { supabase } from '../../lib/supabase'; // Import Supabase instance
-import useAuth from '../../hooks/useAuth'; // Assuming useAuth hook provides access to user
 import BackButton from '../../components/buttons/BackButton';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import axios from 'axios';
-
 import { useGender } from '../../context/GenderContext';
+import { useOnboarding } from '../../context/OnboardingContext'; 
+import useAuth from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase'; 
+import ProgressBar from '../../components/ProgressBar';
 
 interface Brands {
   brand: string;
@@ -21,13 +22,14 @@ const BrandScreen: React.FC = () => {
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<Brands[]>([]);
   const { gender } = useGender();
+  const { setCurrentStep, currentStep} = useOnboarding(); 
 
   const handleBrandSelection = (id: string) => {
     setSelectedBrands(prevSelectedBrands => {
-        const updatedBrands = prevSelectedBrands.includes(id) 
-            ? prevSelectedBrands.filter(brandId => brandId !== id)
-            : [...prevSelectedBrands, id];
-        return updatedBrands;
+      const updatedBrands = prevSelectedBrands.includes(id)
+        ? prevSelectedBrands.filter(brandId => brandId !== id)
+        : [...prevSelectedBrands, id];
+      return updatedBrands;
     });
   };
 
@@ -47,35 +49,39 @@ const BrandScreen: React.FC = () => {
           navigation.navigate('ColourPrefScreen');
         }
       } catch (error) {
-        if (error instanceof Error)
-        console.error('Unexpected error:', error.message);
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        if (error instanceof Error) {
+          console.error('Unexpected error:', error.message);
+          Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        }
       }
     } else {
-      if(!user){
+      if (!user) {
         Alert.alert('Error', 'User not found. Please log in again.');
       } else {
         Alert.alert('Error', 'No brands selected. Please select at least 1 brand.');
       }
     }
   };
-  
+
+  const handleBack = async () => {
+    setCurrentStep(1)
+    navigation.goBack()
+  }
+
   const getBrands = async () => {
     try {
       console.log('Fetching Brands Data');
-      //console.log('Gender: '+gender)
       const response = await axios.get(`https://styleswipe.azurewebsites.net/getBrands${gender}`, {
-          headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-          },
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       });
       if (response.data) {
-          setBrands(response.data);
-          //console.log(brands);
+        setBrands(response.data);
       } else {
-          console.error('Unexpected response structure:', response.data);
+        console.error('Unexpected response structure:', response.data);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -84,29 +90,29 @@ const BrandScreen: React.FC = () => {
 
   useEffect(() => {    
     getBrands();
+    setCurrentStep(2);
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
+      <ProgressBar totalSteps={5} currentStep={currentStep}/>
       <View style={styles.title}>
         <Text style={styles.titleText}>Hey {user?.name || 'Guest'},</Text>
         <Text style={styles.description}>Pick some brands that you like.</Text>
       </View>
       {brands && <View style={styles.buttonWrapper}>
-        {brands.map((i) => (
+        {brands.map((brand) => (
           <BrandButton
-            key={brands.indexOf(i)}
-            name={i.brand}
-            url={i.image}
+            key={brand.brand}
+            name={brand.brand}
+            url={brand.image}
             onPress={handleBrandSelection}
-            selected={selectedBrands.includes(i.brand)}
+            selected={selectedBrands.includes(brand.brand)}
           />
         ))}
-      </View>
-      }
-      
+      </View>}
       <View style={styles.backButtonContainer}>
-        <BackButton onPress={() => navigation.goBack()} />
+        <BackButton onPress={handleBack} />
       </View>
       <View style={styles.nextButtonContainer}>
         <NextButton onPress={handleNext} />
@@ -119,7 +125,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: 'white', 
+    backgroundColor: 'white',
   },
   title: {
     justifyContent: 'center',

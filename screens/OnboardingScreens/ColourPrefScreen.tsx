@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, View, ScrollView, SafeAreaView, Alert} from 'react-native';
 import PrefButton from '../../components/buttons/PrefButton';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -8,12 +8,16 @@ import { ColorData } from '../../data/ColorData';
 import useAuth from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 
+import { useOnboarding } from '../../context/OnboardingContext';
+import ProgressBar from '../../components/ProgressBar';
+
 const { width, height } = Dimensions.get('screen');
 
 export default function ColourPrefScreen() {
   const navigation = useNavigation<NavigationProp<any>>();
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const { user } = useAuth();
+  const { setCurrentStep, currentStep } = useOnboarding();
 
   const handleColorSelection = (id: string) => {
     setSelectedColors(prevSelectedColors => {
@@ -23,6 +27,10 @@ export default function ColourPrefScreen() {
         return updatedColors;
     });
 };
+
+useEffect(() => {
+  setCurrentStep(3);
+}, []);
 
 
   const handleNext = async () => {
@@ -52,8 +60,14 @@ export default function ColourPrefScreen() {
     }
   };
 
+  const handleBack = async () => {
+    setCurrentStep(2)
+    navigation.goBack()
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <ProgressBar totalSteps={5} currentStep={currentStep}/>
       <View style={styles.title}>
         <Text style={styles.titleText}>What do you prefer?</Text>
         <Text style={styles.description}>Help us understand you better by choosing a few colours!</Text>
@@ -70,7 +84,7 @@ export default function ColourPrefScreen() {
         ))}
       </ScrollView>
       <View style={styles.backButtonContainer}>
-        <BackButton onPress={() => navigation.goBack()} />
+        <BackButton onPress={handleBack} />
       </View>
       <View style={styles.nextButtonContainer}>
         <NextButton onPress={handleNext} />
@@ -82,7 +96,7 @@ export default function ColourPrefScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff', // Set background color to ensure it covers the entire screen
+    backgroundColor: '#fff', 
     alignItems: 'center',
   },
   title: {
@@ -105,6 +119,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
     padding: 4,
+    paddingLeft: 20,
   },
   nextButtonContainer: {
     position: 'absolute',

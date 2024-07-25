@@ -7,12 +7,14 @@ import PriceRangeScreen from './OnboardingScreens/PriceRangeScreen';
 import EndScreen from './OnboardingScreens/EndScreen';
 
 import { GenderProvider } from '../context/GenderContext';
+import { OnboardingProvider } from '../context/OnboardingContext';
 
 const Stack = createNativeStackNavigator();
 
 
 const OnboardingScreen = () => {
   return (
+    <OnboardingProvider>
     <GenderProvider>
       <Stack.Navigator screenOptions={{headerShown:false}}>
         <Stack.Screen name='GenderScreen' component={GenderScreen} />
@@ -22,6 +24,7 @@ const OnboardingScreen = () => {
         <Stack.Screen name='EndScreen' component={EndScreen}/>
       </Stack.Navigator>
     </GenderProvider>
+    </OnboardingProvider>
   )
 }
 

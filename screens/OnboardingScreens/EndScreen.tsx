@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, Dimensions, SafeAreaView, Alert } from 'react-native';
 import NextButton from '../../components/buttons/NextButton';
 import BackButton from '../../components/buttons/BackButton';
@@ -6,12 +6,15 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase'; 
 import { useAuth } from '../../context/AuthContext';
 import Main from '../../tabs/Main';
+import { useOnboarding } from '../../context/OnboardingContext';
+import ProgressBar from '../../components/ProgressBar';
 
 const { width, height } = Dimensions.get('screen');
 
 const EndScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const { user, setOnboarded } = useAuth(); 
+  const { currentStep, setCurrentStep } = useOnboarding()
 
 
   const navigateToHome = () => {
@@ -20,7 +23,16 @@ const EndScreen: React.FC = () => {
       routes: [{ name: 'MainTabs' }],
     });
   };
+
+  useEffect(() => {
+    setCurrentStep(5);
+  }, []);
   
+  const handleBack = async () => {
+    setCurrentStep(4)
+    navigation.goBack()
+  };
+
   const handleNext = async () => {
     if (user) {
       try {
@@ -63,13 +75,14 @@ const EndScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ProgressBar totalSteps={5} currentStep={currentStep}/>
       <View style={styles.container}>
         <View style={styles.title}>
           <Text style={styles.titleText}>You're all set!</Text>
           <Text style={styles.description}>Let's get to swiping!</Text>
         </View>
         <View style={styles.backButtonContainer}>
-          <BackButton onPress={() => navigation.goBack()} />
+          <BackButton onPress={handleBack} />
         </View>
         <View style={styles.nextButtonContainer}>
           <NextButton onPress={handleNext} />
