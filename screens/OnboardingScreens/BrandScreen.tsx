@@ -7,9 +7,11 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import axios from 'axios';
 import { useGender } from '../../context/GenderContext';
 import { useOnboarding } from '../../context/OnboardingContext'; 
-import useAuth from '../../hooks/useAuth';
+import useAuthHook from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase'; 
 import ProgressBar from '../../components/ProgressBar';
+
+import { useAuth } from '../../context/AuthContext';
 
 interface Brands {
   brand: string;
@@ -17,13 +19,14 @@ interface Brands {
 }
 
 const BrandScreen: React.FC = () => {
-  const { user } = useAuth();
+  const { user } = useAuthHook();
   const navigation = useNavigation<NavigationProp<any>>();
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<Brands[]>([]);
   const { gender } = useGender();
   const { setCurrentStep, currentStep} = useOnboarding(); 
 
+  const { name } = useAuth();
   const handleBrandSelection = (id: string) => {
     setSelectedBrands(prevSelectedBrands => {
       const updatedBrands = prevSelectedBrands.includes(id)
@@ -97,7 +100,7 @@ const BrandScreen: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ProgressBar totalSteps={5} currentStep={currentStep}/>
       <View style={styles.title}>
-        <Text style={styles.titleText}>Hey {user?.name || 'Guest'},</Text>
+        <Text style={styles.titleText}>Hey {name || 'Guest'},</Text>
         <Text style={styles.description}>Pick some brands that you like.</Text>
       </View>
       {brands && <View style={styles.buttonWrapper}>

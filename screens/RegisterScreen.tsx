@@ -8,6 +8,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { supabase } from '../lib/supabase';
 import LoginButton from '../components/LoginButton';
+import { useAuth } from '../context/AuthContext';
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
@@ -40,6 +41,7 @@ const RegisterScreen: React.FC = () => {
   const supabaseSubmit = async (values: FormValues) => {
     try {
       console.log("Submitting signup")
+
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,

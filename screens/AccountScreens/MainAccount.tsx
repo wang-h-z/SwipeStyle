@@ -8,7 +8,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 const MainAccountScreen: React.FC = () => {
 
   const navigation = useNavigation<NavigationProp<any>>();
-  const { user } = useAuth();
+  const { user, name:userName } = useAuth();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -19,7 +19,7 @@ const MainAccountScreen: React.FC = () => {
   //console.log(user);
   // Get user email and name
   const email = user?.email;
-  const name = user[0].name || 'John Doe'; 
+  const name = userName || 'John Doe'; 
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

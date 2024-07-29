@@ -20,7 +20,7 @@ interface CartProps extends ClothesCardProps {
 
 const Cart: React.FC = () => {
 
-  const { user } = useAuth();  
+  const { user, name } = useAuth();  
   const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem, clearCart } = useCart();
   const { addToOrder } = useOrder();
   
@@ -105,7 +105,7 @@ const Cart: React.FC = () => {
       body: JSON.stringify({
         totalPrice: totalPrice(),
         customerEmail: user?.email,
-        customerName: user[0].name,
+        customerName: name,
       }),
     });  
 
