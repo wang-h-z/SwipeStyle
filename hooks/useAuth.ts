@@ -54,7 +54,6 @@ export default function useAuthHook() {
         setUser(null);
       }
     });
-
     // Cleanup the listener on unmount
     return () => {
       subscription.unsubscribe();

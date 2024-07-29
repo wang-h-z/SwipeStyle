@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Modal, Dimensions, Alert } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+
 import { useCart } from '../context/CartContext';
+import { useOrder } from '../context/OrderContext';
+
 import { ClothesCardProps } from '../types/ClothesCardProps';
 import LoginButton from '../components/LoginButton';
 import DropdownComponent from '../components/DropDown';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import { StripeProvider, usePaymentSheet } from '@stripe/stripe-react-native';
+import { useAuth } from '../context/AuthContext';
 
 
 interface CartProps extends ClothesCardProps {
@@ -17,9 +20,9 @@ interface CartProps extends ClothesCardProps {
 
 const Cart: React.FC = () => {
 
-  const navigation = useNavigation<NavigationProp<any>>();
-  
+  const { user } = useAuth();  
   const { cartItems, removeFromCart, totalPrice, addQuantity, removeQuantity, updateCartItem, clearCart } = useCart();
+  const { addToOrder } = useOrder();
   
   const [selectedItem, setSelectedItem] = React.useState<CartProps | null>(null);
   const [color, setColor] = useState<string | null>(null);
@@ -70,6 +73,19 @@ const Cart: React.FC = () => {
   
   }, [color])
 
+  const checkOutSuccess = () => {
+    addToOrder(
+      {
+        orderNo: 'Order No: #' + Math.random().toString(36).slice(2),
+        items: cartItems,
+        itemNo: cartItems.length,
+        orderTotal: totalPrice(),
+      }
+    );
+    clearCart();
+
+  }
+
   /**
    * Stripe Functions
    */
@@ -84,12 +100,14 @@ const Cart: React.FC = () => {
     const response = await fetch(`https://styleswipe.azurewebsites.net/payment-sheet`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json',  
       },
       body: JSON.stringify({
         totalPrice: totalPrice(),
+        customerEmail: user?.email,
+        customerName: user[0].name,
       }),
-    });
+    });  
 
     const { paymentIntent, ephemeralKey, customer } = await response.json();
     //console.log(response.json())
@@ -114,9 +132,6 @@ const Cart: React.FC = () => {
       customerEphemeralKeySecret: ephemeralKey,
       paymentIntentClientSecret: paymentIntent,
       allowsDelayedPaymentMethods: true,
-      defaultBillingDetails: {
-        name: 'Jane Doe',
-      },
       returnURL: 'payment-sheet://stripe-redirect',
     });
 
@@ -131,7 +146,7 @@ const Cart: React.FC = () => {
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
       Alert.alert('Success', 'Your order is confirmed!');
-      clearCart();
+      checkOutSuccess();
     }
     setCheckOutLoading(false);
   };
@@ -268,12 +283,13 @@ const Cart: React.FC = () => {
 
               <Text style={styles.price}>{selectedItem.price[0] + parseFloat(selectedItem.price[1]).toFixed(2)}</Text>
                           
-              {selectedItem.rating?.average && 
+              {typeof(selectedItem.rating) !== 'string' && 
                 <Text style={styles.price}>{selectedItem.rating.average.toFixed(2)} ⭐ ({selectedItem.rating.count})</Text>
               }
               </View>
               
               <Text style={styles.info}>{selectedItem.name}</Text>  
+              <Text style={styles.info}><Text style={{fontWeight:'bold'}}>Brand: </Text>{selectedItem.brand}</Text>
               
               <View style={{
                 flexDirection:'row', 

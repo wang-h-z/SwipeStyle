@@ -10,9 +10,11 @@ export default function Home() {
     const [clothes, setClothes] = useState<ClothesData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<any>(null);
-    const appState = useRef(AppState.currentState);
+    //const appState = useRef(AppState.currentState);
     const { user } = useAuth();
-
+    const [fetchMore, setFetchMore] = useState(false);
+    
+    //Initial data fetch
     useEffect(() => {
         /** 
         const handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -38,13 +40,22 @@ export default function Home() {
 
     }, []);
 
+    //Subsequent data fetch
+    useEffect(() => {
+        
+        if(fetchMore){
+            fetchData();
+            setFetchMore(false);
+        }
+    }, [fetchMore]);
+
     const fetchUserData = async () => {
         console.log("Fetching user data");
         if (user) {
             try {
                 const { data: profile, error } = await supabase
                     .from('users')
-                    .select('gender, brands')
+                    .select('gender, brands, liked_items, disliked_items')
                     .eq('id', user.id)
                     .single();
 
@@ -67,25 +78,41 @@ export default function Home() {
 
         try {
             const profile = await fetchUserData();
-            const { gender, brands } = profile || {};
-            const brandString =  brands.join(",");
-            console.log('Fetching clothing data');
+            const { gender, brands, liked_items, disliked_items } = profile || {};
             
-            const url = `https://styleswipe.azurewebsites.net/${gender}/getStack?brands=${brandString}`
+            const names: { [key: string]: string } = {};
+            
+            liked_items.forEach((i: { name: string; }) => {
+                names[i.name] = i.name;
+            })
+            
+            disliked_items.forEach((i: { name: string; }) => {
+                names[i.name] = i.name;
+            }) 
 
-            const response = await axios.get(url, {
-                headers: {
+            console.log('Fetching clothing data'); 
+            //console.log(Object.keys(names).length);
+            const url = `https://styleswipe.azurewebsites.net/${gender}/getStack`;
+            
+            //const url = `http://localhost:5051/${gender}/getStack`;
+            
+            const response = await axios.post(url, 
+                {
+                  brands: brands,
+                  seen: names,
+                }, 
+                {
+                  headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache',
                     'Expires': '0',
-                },
-            });
-            if (response.data) {
-                setClothes(response.data.clothes_data);
-                console.log('setClothes called');
-            } else {
-                console.error('Unexpected response structure:', response.data);
-            }
+                    'Content-Type': 'application/json' 
+                  }
+                }
+              ).then((response) => setClothes(response.data.clothes_data))
+               .catch((error) => {console.error('Error fetching data:', error);setError(error);})
+               .finally(() => {setLoading(false);});
+
         } catch (err) {
             console.error('Error fetching data:', err);
             setError(err);
@@ -96,7 +123,8 @@ export default function Home() {
 
     if (loading) {
         console.log("loading");
-        return <View><Text>Loading...</Text></View>;
+            return <View><Text>Loading...</Text></View>;
+        
     }
 
     if (error) {
@@ -110,6 +138,6 @@ export default function Home() {
     }));
 
     return (
-        <SwipeCard dummy={data} />
+        <SwipeCard dummy={data} fetchMore={setFetchMore}/>
     );
 }

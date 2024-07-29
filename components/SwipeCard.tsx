@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { startTransition, useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, PanResponder as PanResponder_, StyleSheet, View, useWindowDimensions, Text } from 'react-native';
 import ClothesCard from "../components/ClothesCard";
 import { useCart } from '../context/CartContext';
@@ -10,6 +10,8 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 
 interface SwipeCardProps {
     dummy: ClothesCardProps[];
+    fetchMore: React.Dispatch<React.SetStateAction<boolean>>;    
+
 }
 const { width, height } = Dimensions.get('screen');
 
@@ -18,7 +20,7 @@ export const SIZES = {
     height,
 };
 
-const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
+const SwipeCard: React.FC<SwipeCardProps> = ({ dummy, fetchMore }) => {
     const [data, setdata] = useState(dummy);
 
     const position = useRef(new Animated.ValueXY()).current;
@@ -34,21 +36,35 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
     const [showUpIcon, setShowUpIcon] = useState(false);
 
     const [saved, setSaved] = useState(false);
+    const [collectionModal, setCollectionModalVisible] = useState(false);
 
     const leftTap = () => {
         setStart((prevStart) => prevStart === 0 ? currentCard.image.length - 1 : (prevStart - 1) % currentCard.image.length);
-        console.log('left tap');
+        //console.log('left tap');
     };
 
     const rightTap = () => {
         setStart((prevStart) => (prevStart + 1) % currentCard.image.length);
         console.log('right tap');
+        console.log(start)
     };
 
     const triggerRightSwipe = () => {
-        console.log('save button');
+        //console.log('save button');
         setSaved(true);
     }
+
+    const triggerCollectionModal = () => {
+        setCollectionModalVisible(!collectionModal);
+        //console.log("Collections Modal: "+collectionModal)
+    }
+
+    useEffect(() => {
+        if (currentIndex === data.length) {
+            fetchMore(true);
+        }
+    }, [currentIndex])
+
 
     useEffect(() => {
         if (saved) {
@@ -59,9 +75,6 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
             }).start(() => {
                 setStart(nextCard.start);
     
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
     
                 setTimeout(() => {
                     setCurrentIndex(currentIndex + 1);
@@ -76,7 +89,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
     }, [saved]);
 
     const { addToCart } = useCart();
-    const { addToLiked } = useLiked();
+    const { addToLiked, addToDisliked } = useLiked();
 
     const rotate = position.x.interpolate({
         inputRange: [-SIZES.width, 0, SIZES.width],
@@ -102,7 +115,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
         onStartShouldSetPanResponder: (evt, gestureState) => false,
         onMoveShouldSetPanResponder: (evt, gestureState) => {
             const { dx, dy } = gestureState;
-            return Math.abs(dx) > 5 || Math.abs(dy) > 5;
+            return (Math.abs(dx) > 5 || Math.abs(dy) > 5) && !collectionModal;
         },
         onPanResponderMove: (evt, gestureState) => {
             position.setValue({ x: gestureState.dx, y: Math.min(0, gestureState.dy) });
@@ -126,15 +139,13 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                 setShowUpIcon(false);
             }
 
-            if (data?.length / 2 < currentIndex) {
-                setdata([...data, ...dummy]);
-            }
+  
         },
         onPanResponderRelease: (evt, gestureState) => {
 
 
             if (Math.abs(gestureState.dy) > 200 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
-                console.log("Swipe up")
+                //console.log("Swipe up")
                 Animated.spring(position, {
                     toValue: { x: Math.sign(gestureState.dx) * SIZES.width, y: -SIZES.height },
                     useNativeDriver: false,
@@ -144,9 +155,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                     setStart(nextCard.start);
                 });
 
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
+ 
 
                 setTimeout(() => {
                     setCurrentIndex(currentIndex + 1);
@@ -156,7 +165,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                     setShowUpIcon(false);
                 }, 200);
             } else if (gestureState.dx > 120) {
-                console.log("Swipe right");
+                //console.log("Swipe right");
                 Animated.spring(position, {
                     toValue: { x: SIZES.width + 100, y: 0 },
                     useNativeDriver: false,
@@ -166,9 +175,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                     setStart(nextCard.start);
                 });
 
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
+  
 
                 setTimeout(() => {
                     setCurrentIndex(currentIndex + 1);
@@ -178,18 +185,17 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                     setShowUpIcon(false);
                 }, 200);
             } else if (gestureState.dx < -120) {
-                console.log("Swipe left");
+                //console.log("Swipe left");
                 Animated.spring(position, {
                     toValue: { x: -SIZES.width - 100, y: 0 },
                     useNativeDriver: false,
                     mass: 0.5,
                 }).start(() => {
+                    addToDisliked(currentCard, start);
                     setStart(nextCard.start);
                 });
 
-                if (data?.length / 2 < currentIndex) {
-                    setdata([...data, ...dummy]);
-                }
+
 
                 setTimeout(() => {
                     setCurrentIndex(currentIndex + 1);
@@ -202,7 +208,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                 setShowLeftIcon(false);
                 setShowRightIcon(false);
                 setShowUpIcon(false);
-                console.log("Reset");
+                //console.log("Reset");
                 Animated.spring(position, {
                     toValue: { x: 0, y: 0 },
                     friction: 4,
@@ -246,6 +252,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                     return null;
                 } else if (i == currentIndex) {
                     return (
+                        
                         <Animated.View
                             key={i}
                             {...PanResponder.panHandlers}
@@ -258,8 +265,10 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                                 leftTap={leftTap}
                                 rightTap={rightTap}
                                 triggerRightSwipe={triggerRightSwipe}
+                                collectionModal={triggerCollectionModal}
                             />
                         </Animated.View>
+                        
                     );
                 } else {
                     return (
@@ -276,6 +285,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({ dummy }) => {
                                 leftTap={leftTap}
                                 rightTap={rightTap}
                                 triggerRightSwipe={triggerRightSwipe}
+                                collectionModal={triggerCollectionModal}
                             />
                         </Animated.View>
                     );
