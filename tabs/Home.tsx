@@ -13,6 +13,7 @@ export default function Home() {
     //const appState = useRef(AppState.currentState);
     const { user } = useAuth();
     const [fetchMore, setFetchMore] = useState(false);
+    const [AIloading, setAIloading] = useState(false);
     
     //Initial data fetch
     useEffect(() => {
@@ -37,14 +38,15 @@ export default function Home() {
         */
 
         fetchData();
-
     }, []);
 
     //Subsequent data fetch
     useEffect(() => {
         
         if(fetchMore){
-            fetchData();
+
+            fetchAIData();
+            
             setFetchMore(false);
         }
     }, [fetchMore]);
@@ -55,14 +57,14 @@ export default function Home() {
             try {
                 const { data: profile, error } = await supabase
                     .from('users')
-                    .select('gender, brands, liked_items, disliked_items')
+                    .select('gender, brands, liked_items, disliked_items, id')
                     .eq('id', user.id)
                     .single();
 
                 if (error) {
                     throw new Error(error.message);
                 }
-
+                
                 return profile;
 
             } catch (err) {
@@ -121,10 +123,60 @@ export default function Home() {
         }
     };
 
+    const updateAI = async () => {
+        console.log("Updating AI");
+
+        const profile = await fetchUserData();
+        const { gender, liked_items, disliked_items, id } = profile  || {}
+
+        const url = 'https://swipestyle-ai.azurewebsites.net/update';
+
+        const response = await axios.post(url, 
+            {
+                user: {
+                    id : id,
+                    liked_items: liked_items,
+                    disliked_items: disliked_items,
+                    gender: gender
+                }
+            }
+        );
+        
+        return {response, gender, id};
+    };
+
+    const fetchAIData = async () => {
+        setAIloading(true);
+        const {response:res, gender, id} = await updateAI();
+        console.log("Update Done")
+        if (res.status === 200) {
+            console.log("Fetching AI data");
+            const url = 'https://swipestyle-ai.azurewebsites.net/recommend';
+
+            const response = await axios.post(url,
+                {
+                    user_id: id,
+                    top_n: 25,
+                    gender: gender
+                }
+            ).then((response) => setClothes(response.data))
+            .catch((error) => fetchData()).finally(() => setAIloading(false));
+        } else {
+            console.error('Error fetching AI data:', res);
+            fetchData();
+            setAIloading(false);   
+        }
+    };
+
     if (loading) {
         console.log("loading");
             return <View><Text>Loading...</Text></View>;
         
+    }
+
+    if (AIloading) {
+        console.log("AI loading");
+        return <View><Text>Fetching recommendations from AI model...</Text></View>;
     }
 
     if (error) {
