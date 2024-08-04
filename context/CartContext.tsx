@@ -1,24 +1,23 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { ClothesCardProps } from '../types/ClothesCardProps';
-import { supabase } from '../lib/supabase';
-import { useAuth } from './AuthContext';
+import { useAuth } from './AuthContextfb';
+import { db } from '../lib/firebase'; // Import your Firestore instance
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 interface CartContextType {
   cartItems: CartProps[];
-  addToCart: (item: ClothesCardProps, imgNo: number, size?:string) => void;
-
-  removeFromCart: (name: string, imageNo: number, size: string) => void;
-  addQuantity: (name: string, imageNo: number, size: string) => void;
-  removeQuantity: (name: string, imageNo: number, size: string) => void;
-  
+  addToCart: (item: ClothesCardProps, imgNo: number, size?: string) => void;
+  removeFromCart: (id: string, imageNo: number, size: string) => void;
+  addQuantity: (id: string, imageNo: number, size: string) => void;
+  removeQuantity: (id: string, imageNo: number, size: string) => void;
   totalPrice: () => string;
   updateCartItem: (item: CartProps) => void;
-
   clearCart: () => void;
 }
+
 interface CartProviderProps {
-    children: ReactNode;
-  }
+  children: ReactNode;
+}
 
 interface CartProps extends ClothesCardProps {
   imageNo: number;
@@ -29,82 +28,63 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartProps[]>([]);
-  const [fetched, setFetch] = useState<boolean>(false);
+  const [fetched, setFetched] = useState<boolean>(false);
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchCartItems = async () => {
       if (user) {
         try {
-          // Fetch collections from Supabase 'collections' table
-          const { data: profile, error } = await supabase
-            .from('users')
-            .select('cart_items')
-            .eq('id', user.id)
-            .single();
+          const userDoc = doc(db, 'users', user.id); // Retrieve uid from user object
+          const userSnap = await getDoc(userDoc);
 
-          if (error) {
-            throw new Error(error.message);
-          }
-          console.log("Fetched user cart items")
-          if (profile?.cart_items !== null){
-            setCartItems(profile?.cart_items);
-          }
-          
-          setFetch(true)
-        } catch (error) {
-          if (error instanceof Error) {
-            console.error('Error fetching cart items:', error.message);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setCartItems(userData.cart_items || []);
+            setFetched(true);
           } else {
-            console.log('Unknown Error', error)
+            console.log('No such document!');
           }
+        } catch (error) {
+          console.error('Error fetching cart items:', error);
         }
       }
-    }
+    };
     fetchCartItems();
-  },[]);
+  }, [user]);
 
   const updateCartItems = async () => {
     if (user) {
-        try {
-            const { error } = await supabase
-                .from('users')
-                .update({ cart_items: cartItems })
-                .eq('id', user.id);
-            if (error) {
-                console.error('Error updating cart items:', error.message);
-            } else {
-                console.log('Cart Items updated successfully');
-            }
-        } catch (error) {
-            if (error instanceof Error) {
-                console.error('Unexpected error:', error.message);
-            }
-        }
+      try {
+        const userDoc = doc(db, 'users', user.id); // Retrieve uid from user object
+        await updateDoc(userDoc, { cart_items: cartItems });
+        console.log('Cart items updated successfully');
+      } catch (error) {
+        console.error('Error updating cart items:', error);
+      }
     }
-  }
+  };
 
   useEffect(() => {
-      if (fetched) {
-        updateCartItems();
-      }
+    if (fetched) {
+      updateCartItems();
+    }
   }, [cartItems]);
 
-  const addToCart = (item: ClothesCardProps, imgNo: number, size?:string) => {
-      const newItem = { ...item, imageNo: imgNo, size: size || 'L' };
-      if (cartItems.some(cartItem => cartItem.productID === newItem.productID)) {
-        return;
-      }
-      setCartItems((prevItems) => [...prevItems, newItem]);
-    };
+  const addToCart = (item: ClothesCardProps, imgNo: number, size: string = 'L') => {
+    const newItem = { ...item, imageNo: imgNo, size };
+    if (!cartItems.some(cartItem => cartItem.productID === newItem.productID)) {
+      setCartItems(prevItems => [...prevItems, newItem]);
+    }
+  };
 
   const removeFromCart = (id: string, imageNo: number, size: string) => {
-    setCartItems((prevItems) => prevItems.filter(item => item.productID !== id));
+    setCartItems(prevItems => prevItems.filter(item => item.productID !== id || item.imageNo !== imageNo || item.size !== size));
   };
 
   const addQuantity = (id: string, imageNo: number, size: string) => {
-    setCartItems((prevItems) => prevItems.map(item => item.productID === id && item.size === size && item.imageNo === imageNo  ? { ...item, quantity: item.quantity + 1 } : item));
-  }
+    setCartItems(prevItems => prevItems.map(item => item.productID === id && item.size === size && item.imageNo === imageNo ? { ...item, quantity: item.quantity + 1 } : item));
+  };
 
   const removeQuantity = (id: string, imageNo: number, size: string) => {
     const updatedCartItems = cartItems.reduce((acc: CartProps[], item) => {
@@ -117,26 +97,21 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       }
       return acc;
     }, []);
-  
     setCartItems(updatedCartItems);
   };
 
-  const updateCartItem = (item:CartProps) => {
-    const index = cartItems.findIndex((cartItem) => cartItem.productID === item.productID);
-    cartItems[index] = item;
-
-  }
-  
+  const updateCartItem = (item: CartProps) => {
+    setCartItems(prevItems => prevItems.map(cartItem => cartItem.productID === item.productID ? item : cartItem));
+  };
 
   const totalPrice = () => {
-    const total = cartItems.reduce((total, item) => total + parseFloat(item.price[1]) * item.quantity, 0).toFixed(2);
-    
-    return cartItems.length > 0 ? cartItems[0].price[0] + total : '$0.00';
-  }
+    const total = cartItems.reduce((sum, item) => sum + parseFloat(item.price[1]) * item.quantity, 0).toFixed(2);
+    return cartItems.length > 0 ? `${cartItems[0].price[0]}${total}` : '$0.00';
+  };
 
   const clearCart = () => {
     setCartItems([]);
-  }
+  };
 
   return (
     <CartContext.Provider value={{ 

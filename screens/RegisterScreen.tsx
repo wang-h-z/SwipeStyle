@@ -6,25 +6,32 @@ import { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../lib/supabase';
+import { auth, db } from '../lib/firebase'; 
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import LoginButton from '../components/LoginButton';
-import { useAuth } from '../context/AuthContext';
+import { getAuth, GoogleAuthProvider, } from "firebase/auth";
 
 const SignupSchema = Yup.object().shape({
   name: Yup.string()
     .min(2, 'Too Short!')
-    .max(50, 'Too Long!'),
+    .max(50, 'Too Long!')
+    .required('Name is required'),
   email: Yup.string()
-    .email('Invalid email'),
+    .email('Invalid email')
+    .required('Email is required'),
   password: Yup.string()
     .min(8, 'Min 8 characters')
     .matches(/[0-9]/, 'Requires a number')
     .matches(/[a-z]/, 'Requires a lowercase letter')
     .matches(/[A-Z]/, 'Requires an uppercase letter')
-    .matches(/[^\w]/, 'Requires a symbol'),
+    .matches(/[^\w]/, 'Requires a symbol')
+    .required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords don\'t match.')
+    .required('Confirm Password is required')
 });
+
 
 interface FormValues {
   name: string;
@@ -38,51 +45,32 @@ const RegisterScreen: React.FC = () => {
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(true);
 
-  const supabaseSubmit = async (values: FormValues) => {
-    try {
-      console.log("Submitting signup")
+  const provider = new GoogleAuthProvider();
 
-      const { data, error } = await supabase.auth.signUp({
+  const firebaseSubmit = async (values: FormValues) => {
+    try {
+      console.log("Submitting signup");
+
+      const { user } = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      console.log('User registered with:', user.email);
+
+      // Update user profile with the name
+      await updateProfile(user, { displayName: values.name });
+
+      // Store user data in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        name: values.name,
         email: values.email,
-        password: values.password,
-        options: {
-          data: {
-            name: values.name,
-          }
-        }
       });
 
-      //console.log(data)
+      Alert.alert('Success', 'User registered successfully');
+      navigation.navigate("Login"); // Navigate to Login after successful registration
       
-      if (error) {
-        console.error('Error registering user:', error.message);
-        Alert.alert('Error', error.message);
-        return;
-      }
-
-      if (data.user) {
-        console.log('User registered with:', data.user.email);
-
-        // Insert the user's name into the users table
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({ id: data.user.id, name: values.name });
-
-        //console.log(data.user.id)
-
-        if (insertError) {
-          console.error('Error inserting user profile:', insertError.message);
-          Alert.alert('Error', insertError.message);
-        } else {
-          Alert.alert('Success', 'User registered successfully');
-        }
-      }
-
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error registering user:', error.message);
         Alert.alert('Error', error.message);
-      } else { 
+      } else {
         console.error('Unexpected sign up error:', error);
         Alert.alert('Error', 'An unexpected error occurred');
       }
@@ -98,9 +86,9 @@ const RegisterScreen: React.FC = () => {
         confirmPassword: '' 
       }} 
       validationSchema={SignupSchema}
-      onSubmit={supabaseSubmit}
+      onSubmit={firebaseSubmit}
     >
-      {({values, errors, touched, handleChange, setFieldTouched, isValid, handleSubmit}) => (
+      {({values, errors, touched, handleChange, setFieldTouched, handleSubmit}) => (
         <View style={styles.container}>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Welcome")}>
             <Ionicons name="arrow-back" size={24} color="black" />
@@ -117,6 +105,7 @@ const RegisterScreen: React.FC = () => {
               autoCapitalize='none'
               onBlur={() => setFieldTouched('name')}
             />
+            {errors.name && touched.name && <Text style={styles.errorText}>{errors.name}</Text>}
           </View>
           <View style={styles.textContainer}>
             <TextInput
@@ -128,9 +117,7 @@ const RegisterScreen: React.FC = () => {
               autoCapitalize='none'
               onBlur={() => setFieldTouched('email')}
             />
-            {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
+            {errors.email && touched.email && <Text style={styles.errorText}>{errors.email}</Text>}
           </View>
           <View style={styles.textContainer}>
             <TextInput
@@ -143,9 +130,7 @@ const RegisterScreen: React.FC = () => {
               autoCapitalize='none'
               onBlur={() => setFieldTouched('password')}
             />
-            {errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
+            {errors.password && touched.password && <Text style={styles.errorText}>{errors.password}</Text>}
             <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
               <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
             </TouchableOpacity>
@@ -161,9 +146,7 @@ const RegisterScreen: React.FC = () => {
               autoCapitalize='none'
               onBlur={() => setFieldTouched('confirmPassword')}
             />
-            {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-            )}
+            {errors.confirmPassword && touched.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
             <TouchableOpacity onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)} style={styles.toggleButton}>
               <Icon name={confirmPasswordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
             </TouchableOpacity>
@@ -173,7 +156,8 @@ const RegisterScreen: React.FC = () => {
             <Text style={styles.dividerText}>or</Text>
             <View style={styles.dividerLine} />
           </View>
-          <Text style={styles.login}>Already have an account? 
+          <Text style={styles.login}>
+            Already have an account? 
             <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
               <Text>Login</Text>
             </TouchableOpacity>
@@ -197,20 +181,17 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 90,
     left: 20,
-
   },
   title: {
     fontSize: 35,
     fontWeight: 'bold',
     paddingLeft: '8%',
-
   },
   text: {
     fontSize: 30,
     paddingTop: 10,
     paddingLeft: '8%',
     marginBottom: '10%',
-
   },
   textContainer: {
     flexDirection: 'row',
@@ -221,22 +202,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: '85%',
     alignSelf: 'center',
-    
   },
   errorText: {
     color: 'red',
     fontSize: 12,
-    paddingRight:10
+    paddingRight: 10,
   },
   passwordInput: {
     flex: 1,
     height: 50,
     paddingLeft: 10,
     fontSize: 16,
-  },
-  toggleText: {
-    color: '#007BFF',
-    fontWeight: 'bold',
   },
   toggleButton: {
     paddingHorizontal: 10,
@@ -258,39 +234,13 @@ const styles = StyleSheet.create({
     color: '#A9A9A9',
     fontWeight: 'bold',
   },
-  socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 20,
-    alignSelf: 'center',
-  },
-  socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 10,
-  },
-  input: {
-    width: '80%',
-    height: 50,
-    borderColor: '#A9A9A9',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingLeft: 10,
-    marginBottom: 20,
-    fontSize: 16,
-  },
   login: {
-    alignSelf:'center',
+    alignSelf: 'center',
   },
   loginButton: {
     paddingLeft: 5,
     marginTop: -3,
-
   }
- 
 });
 
 export default RegisterScreen;

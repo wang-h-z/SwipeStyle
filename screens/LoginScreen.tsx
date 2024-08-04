@@ -1,62 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import LoginButton from '../components/LoginButton';
-import { useState } from 'react';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { supabase } from '../lib/supabase'; 
+import { auth, db } from '../lib/firebase'; // Ensure to import your Firebase config
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface Form {
-    email: string;
-    password: string;
+  email: string;
+  password: string;
 }
 
 const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Invalid email'),
-    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
+  email: Yup.string().email('Invalid email').required('Required'),
+  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
 });
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [passwordVisible, setPasswordVisible] = useState(true);
 
-  const supabaseSubmit = async (values: Form) => {
+  const handleLogin = async (values: Form) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user; // Get user object
   
-      if (error) {
-        console.error('Error signing in:', error.message);
-        Alert.alert('Error', error.message);
-      } else if (data.user) {
-        console.log('User signed in with:', data.user.email);
+      // Fetch user document from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists()) {
+        console.log('User signed in:', user.email);
         Alert.alert('Success', 'User signed in successfully');
+      } else {
+        console.error('No user document found!');
+        Alert.alert('Error', 'User document not found');
       }
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error signing in:', error.message);
         Alert.alert('Error', error.message);
       } else {
-        console.error('Unexpected sign in error:', error);
+        console.error('Unexpected error:', error);
         Alert.alert('Error', 'An unexpected error occurred');
       }
     }
   };
+  
 
   const handlePasswordReset = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) {
-        console.error('Error resetting password:', error.message);
-        Alert.alert('Error', error.message);
-      } else {
-        Alert.alert('Success', 'Password reset email sent successfully');
-      }
+      await sendPasswordResetEmail(auth, email);
+      Alert.alert('Success', 'Password reset email sent successfully');
     } catch (error) {
       if (error instanceof Error) {
         console.error('Error resetting password:', error.message);
@@ -67,83 +63,76 @@ const LoginScreen: React.FC = () => {
       }
     }
   };
-  
+
   const temp = () => {
     Alert.alert('Sorry. This feature is currently unavailable', 'Please register with your email and password.');
   };
 
   return (
     <Formik
-    initialValues={{ email: '', password: '' }}
-    onSubmit={supabaseSubmit}
-    validationSchema={LoginSchema}
+      initialValues={{ email: '', password: '' }}
+      onSubmit={handleLogin}
+      validationSchema={LoginSchema}
     >
-    {({ values, errors, handleChange, handleSubmit }) => (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Welcome")}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-      <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.text}>Let's sign you in</Text>
-      <View style={styles.textContainer}>
-      <TextInput
-        style={styles.passwordInput}
-        placeholder="Username or Email"
-        placeholderTextColor="#A9A9A9"
-        onChangeText={handleChange('email')}
-        autoCapitalize='none'
-        value={values.email}
-        
-      />
-      {errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-              )}
-      </View>
-      <View style={styles.textContainer}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder="Password"
-          placeholderTextColor="#A9A9A9"
-          secureTextEntry={passwordVisible}
-          value={values.password}
-          autoCapitalize='none'
-          onChangeText={handleChange('password')}
-        />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
-          <Icon name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => handlePasswordReset(values.email)}>
-          <Text>Forgot Password?</Text>
-      </TouchableOpacity>
-      <View style={styles.dividerContainer}>
-        <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>or</Text>
-        <View style={styles.dividerLine} />
-      </View>
-      
-      <View style={styles.socialContainer}>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-google" size={30} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-facebook" size={30} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton} onPress={()=>temp()}>
-          <Icon name="logo-apple" size={30} color="#000" />
-        </TouchableOpacity>
-      </View>
-      <Text style={styles.register}>Don't have an account? 
-      
-      <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate("Register")}>
-      <Text>Register</Text>
-      </TouchableOpacity>
-      
-      
-      </Text>
-      <LoginButton title="Login" onPress={handleSubmit as () => void}></LoginButton>
-    </View>
-    )}
+      {({ values, errors, handleChange, handleSubmit }) => (
+        <View style={styles.container}>
+          <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Welcome")}>
+            <Ionicons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.text}>Let's sign you in</Text>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Email"
+              placeholderTextColor="#A9A9A9"
+              onChangeText={handleChange('email')}
+              autoCapitalize='none'
+              value={values.email}
+            />
+            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+          </View>
+          <View style={styles.textContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Password"
+              placeholderTextColor="#A9A9A9"
+              secureTextEntry={passwordVisible}
+              value={values.password}
+              autoCapitalize='none'
+              onChangeText={handleChange('password')}
+            />
+            <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)} style={styles.toggleButton}>
+              <Ionicons name={passwordVisible ? 'eye-off' : 'eye'} size={20} color="#A9A9A9" />
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => handlePasswordReset(values.email)}>
+            <Text>Forgot Password?</Text>
+          </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+          <View style={styles.socialContainer}>
+            <TouchableOpacity style={styles.socialButton} onPress={() => temp()}>
+              <Ionicons name="logo-google" size={30} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton} onPress={() => temp()}>
+              <Ionicons name="logo-facebook" size={30} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton} onPress={() => temp()}>
+              <Ionicons name="logo-apple" size={30} color="#000" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.register}>Don't have an account?
+            <TouchableOpacity style={styles.registerButton} onPress={() => navigation.navigate("Register")}>
+              <Text>Register</Text>
+            </TouchableOpacity>
+          </Text>
+          <LoginButton title="Login" onPress={handleSubmit as () => void} />
+        </View>
+      )}
     </Formik>
   );
 }
